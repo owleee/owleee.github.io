@@ -1,0 +1,1121 @@
+<!--https://coolors.co/bd3e3e-875cad-68a357-ffffff-737170-444140-1e1e24-->
+
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap"
+    rel="stylesheet"
+  />
+  <title>Word Generator</title>
+  <style>
+    :root {
+      --red: #bd3e3e;
+      --green: #68a357;
+      --purple: #875cad;
+      --dark: #1e1e24;
+      --light: #444140;
+      --inp-bg: #1e1e24;
+    }
+    body {
+      padding: 0px;
+      margin: 0px;
+      background-color: var(--light);
+      color: #ffffff;
+      font-family: "Poppins", sans-serif;
+      font-size: 20px;
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none;
+    }
+    ::selection {
+      background-color: var(--purple);
+      color: var(--dark);
+    }
+    .panel {
+      padding: 10px;
+      margin: 10px 10% 10px 10%;
+      border-radius: 20px;
+      background-color: var(--dark);
+    }
+    .autowidth {
+      width: auto;
+    }
+    .flex {
+      display: flex;
+    }
+    .block {
+      display: block;
+    }
+    .fullwidth {
+      width: 100%;
+    }
+    button.no-select {
+      width: 30;
+      height: 30;
+    }
+    input.square {
+      width: 20;
+    }
+    div.square {
+      width: 30;
+      height: 30;
+      padding-right: 5px;
+    }
+    #rows {
+      overflow: scroll;
+      box-shadow: inset 0px -11px 15px -10px var(--dark);
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    #row-template {
+      display: none;
+    }
+    .remove-this {
+      border: 1px solid #ffffff;
+      height: 30px;
+      width: 30px;
+      color: #ffffff;
+      border-radius: 0px 15px 15px 0px;
+      font-size: 20px;
+      background-color: var(--inp-bg);
+      text-align: center;
+    }
+    .remove-this:hover {
+      transition: 0.2s;
+      background-color: var(--red);
+      color: #ffffff;
+    }
+    button {
+      border: 1px solid #ffffff;
+      border-radius: 15px;
+      background-color: var(--inp-bg);
+      text-align: center;
+      color: #ffffff;
+      font-family: "Poppins", sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    #generate {
+      font-size: 17.5px;
+      height: 30px;
+      font-weight: normal;
+    }
+    #generate:hover {
+      transition: 0.2s;
+      background-color: var(--purple);
+    }
+    input,
+    textarea {
+      border: 1px solid #ffffff;
+      background-color: var(--inp-bg);
+      height: 30px;
+      color: #ffffff;
+      padding-left: 5px;
+      padding-right: 5px;
+      margin-bottom: 5px;
+      font-family: "Poppins", sans-serif;
+      font-size: 20px;
+    }
+    .row-name {
+      text-align: center;
+      width: 32;
+      border-radius: 15px 0px 0px 15px;
+    }
+    #add,
+    #remove,
+    #undo {
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-size: 15px;
+      width: 30px;
+      height: 30px;
+    }
+    .float-right {
+      float: right;
+    }
+    #add:hover {
+      transition: 0.2s;
+      background-color: var(--green);
+    }
+    #remove:hover,
+    #clear-logs:hover {
+      transition: 0.2s;
+      background-color: var(--red);
+    }
+    #undo:hover {
+      transition: 0.2s;
+      background-color: var(--purple);
+    }
+    p {
+      margin: 0px;
+    }
+    .generator-control {
+      margin-left: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    #no-o-words {
+      height: 30px;
+      width: 50px;
+      border-radius: 15px;
+      margin-right: 5px;
+      margin-bottom: 0px;
+    }
+    #structures {
+      padding-left: 7.5px;
+      border-radius: 15px;
+      margin: 0px;
+    }
+    #help {
+      float: left;
+      position: fixed;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 40px;
+      top: 20px;
+      left: 20px;
+      margin: 0px;
+      padding: 0px;
+      height: 50px;
+      width: 50px;
+      border-radius: 50px;
+    }
+    #help:hover {
+      transition: 0.2s;
+      background-color: var(--purple);
+    }
+    /* Tooltip container */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Tooltip text */
+    .tooltip .tooltip-text {
+      opacity: 0%;
+      background-color: var(--dark);
+      color: #fff;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 6px;
+      width: 80px;
+      top: 110%;
+      left: 50%;
+      margin-left: -40px;
+      font-size: 15px;
+      border-radius: 20px;
+
+      /* Position the tooltip text - see examples below! */
+      position: absolute;
+      z-index: 999;
+    }
+
+    .tooltip .wide-tt {
+      width: 200px;
+      margin-left: -100px;
+    }
+
+    /* Show the tooltip text when you mouse over the tooltip container */
+    .tooltip:hover .tooltip-text {
+      transition-delay: 0.7s;
+      transition-duration: 0.2s;
+      opacity: 100%;
+    }
+    .space-between {
+      justify-content: space-between;
+    }
+    #recursion-warning {
+      font-size: 13px;
+      text-align: center;
+      color: var(--red);
+      display: none;
+      margin-bottom: 5px;
+    }
+    #errors {
+      color: var(--red);
+      margin-top: 5px;
+      display: block;
+    }
+    #recursion-warning a:hover {
+      transition: 0.2s;
+      color: var(--purple);
+    }
+    .footer {
+      width: 80%;
+      position: fixed;
+      bottom: 0px;
+      padding: 0px;
+    }
+
+    details {
+      margin: 10px;
+    }
+
+    #log {
+      height: 200px;
+      overflow: scroll;
+      font-size: 15px;
+      margin: 0px;
+      flex-direction: column-reverse;
+      overflow-anchor: revert;
+    }
+    #top-section {
+      overflow: scroll;
+    }
+    .no-select {
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -o-user-select: none;
+    }
+    .checkbox {
+      -webkit-appearance: none;
+      background-color: var(--inp-bg);
+      border: 1px solid white;
+      width: 20px;
+      height: 20px;
+      border-radius: 15px;
+      display: inline-block;
+      position: relative;
+    }
+
+    .checkbox:checked {
+      color: white;
+    }
+    .checkbox:hover {
+      transition: 0.2s;
+      background-color: var(--purple);
+    }
+    .checkbox:checked:after {
+      content: "\2713";
+      font-size: 14px;
+      position: absolute;
+      top: -1px;
+      left: 4px;
+      font-weight: bold;
+      color: white;
+    }
+    #generated {
+      margin-top: 5px;
+    }
+    #errors text {
+      display: none;
+    }
+    #help-menu {
+      width: 80%;
+      height: 90%;
+      display: none;
+      position: fixed;
+      padding: 0px;
+      z-index: 9999;
+      box-shadow: 0px 0px 10px 10px var(--light);
+      overflow: scroll;
+    }
+    #help-text {
+      overflow: scroll;
+      padding: 0px 50px 10px 50px;
+      text-align: justify;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+    }
+    h1,
+    h2 {
+      text-align: center;
+    }
+    #logs-panel {
+      box-shadow: 0px 0px 10px 10px var(--light);
+    }
+    #generated-panel {
+      margin-bottom: 70px;
+    }
+    .note {
+      font-size: 15px;
+      margin-top: 10px;
+      padding: 0px;
+    }
+    a {
+      color: var(--purple);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+      transition: 0.2s;
+    }
+    #json-input {
+      margin-top: 20px;
+      width: 100%;
+      font-size: 20px;
+      height: 100px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 15px;
+    }
+    #load-json {
+      margin-top: 10px;
+      width: 100px;
+      font-weight: normal;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #load-json:hover {
+      transition: 0.2s;
+      background-color: var(--purple);
+    }
+    #loaded-text,
+    #copied-text {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body onload="loadCookies(); saveCookies();">
+  <div id="help" class="square panel tooltip no-select" onclick="helpMenu()">
+    ?
+    <span class="tooltip-text">Help</span>
+  </div>
+  <div id="help-menu" class="panel">
+    <div id="help-text" class="no-select">
+      <h1>Help Menu</h1>
+      <h2>Phoneme Groups</h2>
+      <text
+        >Phonemes can be placed into groups for generation or evolution*. Using
+        the inputted letter (a
+        <a
+          href="https://en.wikipedia.org/wiki/Cover_symbols_used_in_linguistics"
+          >cover symbol</a
+        >) is shorthand for all phonemes in the given group.<br />Cover symbols
+        may be used in the definitions of others, though this may cause errors
+        if two are defined in terms of one another.
+      </text>
+      <div class="note">
+        * Phonological evolution is not yet implemented
+      </div>
+      <h2>Word Structures</h2>
+      <text
+        >Words are generated based on the inputted word structure. This
+        comprises brackets, commas,
+        <a
+          href="https://en.wikipedia.org/wiki/Cover_symbols_used_in_linguistics"
+          >cover symbols</a
+        >
+        (see above) and individual phonemes.<br />Brackets around a phoneme,
+        group name or sequence thereof indicate a 50/50 chance of generating
+        their contents.<br />Placing a comma inside brackets indicates a choice
+        between the terms inside the brackets.*
+        <div class="note">* Beta feature - may not work as intended</div>
+      </text>
+      <h2>Hotkeys</h2>
+      <ul>
+        <li>[+] - Add row</li>
+        <li>[-] - Remove row</li>
+        <li>[`] - Help menu</li>
+        <li>[[] - Toggle "Filter Duplicates"</li>
+        <li>[]] - Toggle "New Lines"</li>
+        <li>[\] - Logs</li>
+      </ul>
+      <h2>Saving</h2>
+      <text
+        >All settings and inputs are saved to the browser as cookies. Click
+        <a
+          onclick="if(confirm('Are you sure you want to clear all cookies?')){deleteAllCookies()}"
+          >here</a
+        >
+        to clear cookies. A reload is required to reset the page.<br />Your
+        settings can also be imported (see below) and
+        <a onclick="exportCookies()">exported as a JSON</a>.</text
+      ><text id="copied-text"></text>
+      <textarea
+        id="json-input"
+        placeholder="Enter JSON save code..."
+      ></textarea>
+      <button id="load-json" onclick="importCookies()">Load</button>
+      <text id="loaded-text"></text>
+    </div>
+  </div>
+  <div id="top-section">
+    <div id="definitions-panel" class="panel flex no-select">
+      <div id="definitions" class="block fullwidth">
+        <div id="rows">
+          <div id="row-template" class="row flex">
+            <input
+              type="text"
+              placeholder="-"
+              maxlength="1"
+              class="row-name"
+              onkeyup="validateName(this);"
+              onchange="validateName(this);"
+            />
+            <input
+              type="text"
+              placeholder="Enter phonemes..."
+              class="row-contents fullwidth"
+              onkeyup="validateContents(this)"
+              onchange="validateContents(this); cleanContents(this);"
+            />
+            <button
+              id="remove-this"
+              class="square remove-this"
+              onclick="removeThis(this)"
+              style="display: none;"
+            >
+              x
+            </button>
+          </div>
+        </div>
+        <div id="recursion-warning" class="flex fullwidth">
+          Warning: using cover symbols inside group definitions can cause
+          recursion. Proceed at your own risk.
+          <a onclick="dismiss(this)">[Dismiss]</a>
+        </div>
+        <div class="flex fullwidth space-between">
+          <div class="flex">
+            <div class="square tooltip">
+              <button id="add" class="square" onclick="addRow()">+</button>
+              <span class="tooltip-text" style="display: none;">Add Row</span>
+            </div>
+            <div class="square tooltip">
+              <button id="remove" class="square" onclick="removeRow();">
+                -
+              </button>
+              <span class="tooltip-text" style="display: none;"
+                >Remove Row</span
+              >
+            </div>
+          </div>
+          <div class="square tooltip" style="padding-right: 0px;">
+            <button
+              id="undo"
+              class="square"
+              onclick="alert('Undo it yourself coward')"
+            >
+              <b>&curvearrowleft;</b>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="syllable" class="panel">
+      <input
+        id="structures"
+        class="fullwidth"
+        placeholder="Enter word structure..."
+        onkeyup="validateSyllable(this)"
+        onchange="validateSyllable(this); saveStructure(this);"
+      />
+      <div id="errors" class="no-select">
+        <text id="bracket-error">Error: Unmatched brackets<br /></text>
+        <text id="empty-error">Error: Empty brackets<br /></text>
+      </div>
+    </div>
+    <div id="generated-panel" class="panel">
+      <div id="generator-controls" class="flex no-select">
+        <button id="generate" onclick="generateMany()">Generate</button>
+        <div class="generator-control flex">
+          <input
+            id="no-o-words"
+            type="number"
+            min="1"
+            value="1"
+            onkeyup="updateWidth(this)"
+            onchange="validateNumber(this)"
+            style="text-align: center;"
+          />
+          Number of Words
+        </div>
+        <div class="generator-control flex">
+          <input id="filter-dupes" class="checkbox" type="checkbox" /> Filter
+          Duplicates
+        </div>
+        <div class="generator-control flex">
+          <input id="new-lines" class="checkbox" type="checkbox" /> New Lines
+        </div>
+      </div>
+      <p id="generated"></p>
+    </div>
+  </div>
+  <div id="logs-panel" class="panel flex footer autowidth">
+    <details ontoggle="updateScroll()">
+      <summary class="no-select">Logs</summary>
+      <div id="log" class="flex"></div>
+      <button
+        id="clear-logs"
+        style="font-weight: normal;"
+        onclick="document.getElementById('log').innerHTML = '';"
+      >
+        Clear
+      </button>
+    </details>
+  </div>
+
+  <script>
+    document.addEventListener("keypress", function (e) {
+      switch (e.key) {
+        case "=":
+          addRow();
+          break;
+        case "-":
+          removeRow();
+          break;
+        case "Enter":
+          generateMany();
+          break;
+        case "[":
+          let c1 = document.getElementById("filter-dupes");
+          if (c1.checked) {
+            c1.checked = false;
+          } else {
+            c1.checked = true;
+          }
+          break;
+        case "]":
+          let c2 = document.getElementById("new-lines");
+          if (c2.checked) {
+            c2.checked = false;
+          } else {
+            c2.checked = true;
+          }
+          break;
+        case "\\":
+          let d = document.getElementById("log").parentNode;
+          if (d.open) {
+            d.open = false;
+          } else {
+            d.open = true;
+          }
+          break;
+        case "`":
+          helpMenu();
+          break;
+        default:
+          break;
+      }
+    });
+
+    var rowNames = [];
+    var rows = 0;
+    document.getElementById("log").innerHTML = "";
+
+    function addRow() {
+      if (rows < 26) {
+        rows += 1;
+
+        document
+          .getElementById("rows")
+          .appendChild(document.getElementById("row-template").cloneNode(true));
+
+        let r = document.getElementsByClassName("row");
+
+        for (let i = 1; i < r.length; i++) {
+          r[i].id = "";
+        }
+      }
+      update();
+
+      log(`Added row (${rows} total)`);
+    }
+
+    function removeRow() {
+      if (rows > 1) {
+        rows -= 1;
+
+        let r = document.getElementsByClassName("row");
+        r[r.length - 1].remove();
+        log(`Removed row (${rows} total)`);
+      } else {
+        log("Cannot remove row (Mininum of 1 reached)");
+      }
+      update();
+    }
+
+    function removeThis(node) {
+      update();
+      if (rows > 1) {
+        rows -= 1;
+        node.parentNode.remove();
+      }
+      update();
+      log(`Removed row (${rows} total)`);
+    }
+
+    function update() {
+      document.getElementById("rows").style.height =
+        Math.min(rows, 13.5) * 35 + 1;
+      if (rows == 1) {
+        if (document.getElementById("remove").style.display != "none")
+          log(
+            "Remove row and remove this buttons hidden (Mininum of 1 reached)"
+          );
+        document.getElementById("remove").style.display = "none";
+      } else if (rows > 1) {
+        if (document.getElementById("remove").style.display != "block")
+          log("Remove row and remove this buttons shown");
+        document.getElementById("remove").style.display = "block";
+      }
+      if (rows == 26) {
+        if (document.getElementById("add").style.display != "none")
+          log("Add row button hidden (Maximum of 26 reached)");
+        document.getElementById("add").style.display = "none";
+      } else if (rows < 26) {
+        if (document.getElementById("add").style.display != "block")
+          log("Add row button shown");
+        document.getElementById("add").style.display = "block";
+        saveCookies();
+      }
+
+      let b = document.getElementsByClassName("remove-this");
+      for (let i = 0; i < b.length; i++) {
+        if (rows == 1) {
+          b[i].style.display = "none";
+        } else if (rows > 1) {
+          b[i].style.display = "block";
+        }
+      }
+      let c = document.getElementsByClassName("row-contents");
+      for (let i = 0; i < c.length; i++) {
+        if (rows == 1) {
+          c[i].style["border-radius"] = "0px 15px 15px 0px";
+        } else if (rows > 1) {
+          c[i].style["border-radius"] = "";
+        }
+      }
+    }
+
+    function generate() {
+      let syllable = parseSyllable(document.getElementById("structures").value);
+      let word = [];
+      for (i in syllable) word.push(recursivePick(syllable[i]));
+      return word.flat().join("");
+    }
+
+    function generateMany() {
+      let n = document.getElementById("no-o-words").value;
+      let newLines = document.getElementById("new-lines").checked;
+      document.getElementById("generated").innerHTML = "";
+      for (let i = 0; i < n; i++) {
+        document.getElementById("generated").innerHTML +=
+          generate() + (newLines ? "<br>" : " ");
+      }
+      saveCookies();
+    }
+
+    function getRows() {
+      var classes = {};
+      r = document.getElementsByClassName("row");
+      for (let i = 1; i < r.length; i++) {
+        if (!r[i].childNodes[1].value == "") {
+          classes[r[i].childNodes[1].value] = r[i].childNodes[3].value
+            .replaceAll(" ", "")
+            .split(",")
+            .filter((phoneme) => !phoneme == "");
+        }
+      }
+      return classes;
+    }
+
+    function recursivePick(array) {
+      let a = array;
+
+      if (a.includes(undefined) && Array.isArray(a)) {
+        a = pick(a);
+      }
+
+      if (Array.isArray(a)) {
+        if (randbool()) {
+          for (let i = 0; i < a.length; i++) {
+            a[i] = recursivePick(a[i]);
+          }
+        } else {
+          a = "";
+        }
+      }
+      if (check(a, /[A-Z]/)) {
+        a = pick(getRows()[a]);
+      }
+      return a;
+    }
+
+    function randint(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function randbool() {
+      return randint(0, 1) == 1;
+    }
+
+    function pick(a) {
+      let p = removeBlanks(a);
+
+      return p.length == 1 ? p[0] : p[randint(0, p.length - 1)];
+    }
+
+    function helpMenu() {
+      h = document.getElementById("help-menu");
+      if (h.style.display == "block") {
+        h.style.display = "none";
+        document.body.style.margin = "";
+        document.body.style.height = "";
+        document.body.style.overflow = "";
+        document.getElementById("loaded-text").innerHTML = "";
+        document.getElementById("copied-text").innerHTML = "";
+        document.getElementById("json-input").value = "";
+      } else {
+        h.style.display = "block";
+        document.body.style.margin = "0px";
+        document.body.style.height = "100%";
+        document.body.style.overflow = "hidden";
+        //{margin: 0; height: 100%; overflow: hidden}
+      }
+    }
+
+    function dismiss(n) {
+      n.parentNode.remove();
+      console.log("%cYou have been warned...", "color:red;");
+      log("Recursion warning dismissed");
+      log("<text style='color:red;'>You have been warned...</text>");
+    }
+
+    function validateName(input) {
+      input.value = input.value.toUpperCase();
+
+      let allowed = "QWERTYUIOPASDFGHJKLZXCVBNM";
+      if (!allowed.includes(input.value)) {
+        log(`Illegal group name (${input.value}) removed`);
+        input.value = "";
+        saveCookies();
+      }
+
+      let u = [];
+      let n = document.getElementsByClassName("row-name");
+      for (let i = 1; i < n.length; i++) {
+        if (n[i].value != "") {
+          u.push(n[i].value);
+        }
+      }
+      if (countOccurrences(input.value, u) > 1) {
+        log(`Duplicate group name ${input.value} removed`);
+        input.value = "";
+      }
+    }
+
+    function validateContents(input) {
+      let illegal = "=-<>§" + input.parentNode.childNodes[1].value;
+      for (let i = 0; i < illegal.length; i++) {
+        if (input.value.includes(illegal[i])) {
+          input.value = input.value.replaceAll(illegal[i], "");
+        }
+      }
+      saveCookies();
+    }
+
+    function validateSyllable(input) {
+      let illegal = "=-<>§[]{}";
+      for (let i = 0; i < illegal.length; i++) {
+        if (input.value.includes(illegal[i])) {
+          input.value = input.value.replaceAll(illegal[i], "");
+        }
+        saveCookies();
+      }
+
+      if (
+        countOccurrences("(", input.value) == countOccurrences(")", input.value)
+      ) {
+        document.getElementById("bracket-error").style.display = "none";
+      }
+      if (check(input.value, /\(\)/)) {
+        document.getElementById("empty-error").style.display = "none";
+      }
+    }
+
+    function saveStructure(input) {
+      document.getElementById("bracket-error").style.display =
+        countOccurrences("(", input.value) != countOccurrences(")", input.value)
+          ? "block"
+          : "none";
+      let error =
+        countOccurrences("(", input.value) !=
+        countOccurrences(")", input.value);
+      input.value = input.value.replaceAll(/,+/g, ",");
+      input.value = input.value.replaceAll("(,", "(");
+      input.value = input.value.replaceAll(",)", ")");
+      input.value = input.value.replaceAll("()", "");
+      if (error) return;
+    }
+
+    function cleanContents(input) {
+      input.value = input.value.replaceAll(/\s+/g, "");
+
+      input.value = input.value
+        .replaceAll(/,{2,}/g, ",")
+        .replaceAll(/,+$/g, "")
+        .replaceAll(/^,+/g, "");
+
+      let value = input.value.split(",");
+
+      let s = [];
+      let sn = [];
+
+      for (i in value) {
+        value[i] = doMiscellaneousThings(value[i]);
+        if (!s.includes(value[i].replaceAll(/\d*/g, ""))) {
+          sn.push(value[i]);
+          s.push(value[i].replaceAll(/\d*/g, ""));
+        }
+      }
+
+      value = sn;
+
+      input.value = value.join(", ").trim().replace(/,+$/, "");
+
+      document.getElementById("recursion-warning").style.display = check(
+        input.value,
+        /[A-Z]/
+      )
+        ? "block"
+        : "none";
+    }
+
+    function doMiscellaneousThings(a) {
+      if (!a) return "";
+      let match = a.match(/\d*[^\d]+(.*)/);
+      a = reverseString(reverseString(a).replace(reverseString(match[1]), ""));
+      return a;
+    }
+    function reverseString(s) {
+      return s.split("").reverse().join("");
+    }
+
+    function parseSyllable(s) {
+      s = `[${s}]`.replaceAll("(", "[").replaceAll(")", "]");
+      let newS = "";
+      for (i in s) {
+        newS += !"[],".includes(s[i]) ? `"${s[i]}"` : s[i];
+        newS += s[i] == "[" ? "" : ",";
+      }
+      fs = new Function(
+        `return ${newS.replaceAll(",]", "]").replace(/,$/, "")}`
+      );
+      return fs();
+    }
+
+    function removeBlanks(arr) {
+      temp = [];
+
+      for (let i of arr) i && temp.push(i);
+
+      return temp;
+    }
+
+    function validateNumber(input) {
+      if (input.value < 1) input.value = 1;
+      updateWidth(input);
+    }
+    function updateWidth(input) {
+      input.style.width = Math.min(15 + input.value.length * 15, 90);
+    }
+
+    function updateScroll() {
+      if (document.getElementsByTagName("details")[0].open) {
+        document.getElementById("top-section").style.height =
+          document.body.scrollHeight -
+          document.getElementById("logs-panel").getBoundingClientRect().height -
+          10;
+        document.getElementById("logs-panel").style["box-shadow"] =
+          "0px -5px 15px 10px #444140";
+      } else {
+        document.getElementById("top-section").style.height = "";
+      }
+      saveCookies();
+    }
+
+    function countOccurrences(s, l) {
+      const counts = {};
+      for (const num of l) {
+        counts[num] = counts[num] ? counts[num] + 1 : 1;
+      }
+      return counts[s] ? counts[s] : 0;
+    }
+    function check(s, r) {
+      return r.test(s) ? true : false;
+    }
+    function log(s) {
+      let p = document.getElementById("log").innerHTML.split("<br>");
+      if (p[p.length - 2] != s) {
+        document.getElementById("log").innerHTML += s + "<br>";
+      }
+    }
+
+    function saveCookies() {
+      let cookie = {
+        rows: getRows(),
+        wordStructure: document.getElementById("structures").value,
+        numWords: document.getElementById("no-o-words").value,
+        filter: document.getElementById("filter-dupes").checked,
+        newLines: document.getElementById("new-lines").checked,
+        generated: document.getElementById("generated").innerHTML
+      };
+      setCookie("saved", JSON.stringify(cookie));
+      log("Cookies saved");
+    }
+
+    function loadCookies() {
+      try {
+        let cookie = JSON.parse(`${getCookie("saved")}`);
+
+        document.getElementById("structures").value = cookie.wordStructure;
+        document.getElementById("no-o-words").value = cookie.numWords;
+        document.getElementById("filter-dupes").checked = cookie.filter;
+        document.getElementById("new-lines").checked = cookie.newLines;
+        document.getElementById("generated").innerHTML = cookie.generated;
+
+        if (Object.keys(cookie.rows).length == 0) addRow();
+
+        for (i in cookie.rows) {
+          addRow();
+          let r = document.getElementsByClassName("row");
+          r[r.length - 1].childNodes[1].value = i;
+          r[r.length - 1].childNodes[3].value = cookie.rows[i];
+          cleanContents(r[r.length - 1].childNodes[3]);
+        }
+        log("Cookies loaded");
+      } catch {
+        log("No cookies to load");
+        addRow();
+      }
+    }
+
+    function deleteAllCookies() {
+      const cookies = document.cookie.split(";");
+      for (const cookie of cookies) {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
+      console.log("Cookies cleared");
+    }
+
+    function setCookie(name, value, exdays = undefined) {
+      if (exdays != undefined) {
+        const d = new Date();
+        d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+        let expires = "expires=" + d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires;
+      } else {
+        document.cookie = name + "=" + value + ";";
+      }
+    }
+
+    function getCookie(name) {
+      let cookieName = name + "=";
+      let ca = document.cookie.split(";");
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == " ") {
+          c = c.substring(1);
+        }
+        if (c.indexOf(cookieName) == 0) {
+          return c.substring(cookieName.length, c.length);
+        }
+      }
+      return "";
+    }
+    function exportCookies() {
+      let cookie = {
+        rows: getRows(),
+        wordStructure: document.getElementById("structures").value,
+        numWords: document.getElementById("no-o-words").value,
+        filter: document.getElementById("filter-dupes").checked,
+        newLines: document.getElementById("new-lines").checked,
+        generated: document.getElementById("generated").innerHTML
+      };
+      cookie = JSON.stringify(cookie);
+      copyTextToClipboard(cookie);
+      document.getElementById("copied-text").innerHTML =
+        "Settings exported successfully";
+    }
+    function importCookies() {
+      try {
+        var cookie = JSON.parse(document.getElementById("json-input").value);
+      } catch {
+        document.getElementById("loaded-text").innerHTML = "Error loading JSON";
+        return;
+      }
+      document.getElementById("json-input").value = "";
+
+      document.getElementById("structures").value = cookie.wordStructure;
+      document.getElementById("no-o-words").value = cookie.numWords;
+      document.getElementById("filter-dupes").checked = cookie.filter;
+      document.getElementById("new-lines").checked = cookie.newLines;
+      document.getElementById("generated").innerHTML = cookie.generated;
+
+      deleteAllRows();
+
+      if (Object.keys(cookie.rows).length == 0) {
+        addRow();
+      } else {
+        for (i in cookie.rows) {
+          addRow();
+          let r = document.getElementsByClassName("row");
+          r[r.length - 1].childNodes[1].value = i;
+          r[r.length - 1].childNodes[3].value = cookie.rows[i];
+          cleanContents(r[r.length - 1].childNodes[3]);
+        }
+        console.log(rows);
+        update();
+      }
+      document.getElementById("loaded-text").innerHTML =
+        "JSON loaded successfully";
+      log("Settings imported");
+      saveCookies();
+    }
+
+    function deleteAllRows() {
+      let r = document.getElementsByClassName("row");
+      rows = 0;
+      for (let i = 1; i < r.length; i++) r[i].remove();
+      update();
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+
+      // Avoid scrolling to bottom
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        var successful = document.execCommand("copy");
+        var msg = successful ? "successful" : "unsuccessful";
+        console.log("Fallback: Copying text command was " + msg);
+      } catch (err) {
+        console.error("Fallback: Oops, unable to copy", err);
+      }
+
+      document.body.removeChild(textArea);
+    }
+    function copyTextToClipboard(text) {
+      if (!navigator.clipboard) {
+        fallbackCopyTextToClipboard(text);
+        return;
+      }
+      navigator.clipboard.writeText(text).then(
+        function () {
+          console.log("Async: Copying to clipboard was successful!");
+        },
+        function (err) {
+          console.error("Async: Could not copy text: ", err);
+        }
+      );
+    }
+  </script>
+</body>
