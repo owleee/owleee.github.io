@@ -703,7 +703,7 @@
       saveCookies();
     }
 
-    function getRows() {
+    function getRows(row=undefined) {
       var classes = {};
       r = document.getElementsByClassName("row");
       for (let i = 1; i < r.length; i++) {
@@ -711,18 +711,13 @@
           classes[r[i].childNodes[1].value] = r[i].childNodes[3].value
             .replaceAll(" ", "")
             .split(",")
-            .filter((phoneme) => !phoneme == "");
         }
       }
-      return classes;
+      return row==undefined ? classes : classes[row];
     }
 
     function recursivePick(array) {
       let a = array;
-
-      if (a.includes(undefined) && Array.isArray(a)) {
-        a = pick(a);
-      }
 
       if (Array.isArray(a)) {
         if (randbool()) {
@@ -734,7 +729,7 @@
         }
       }
       if (check(a, /[A-Z]/)) {
-        a = pick(getRows()[a]);
+        a = pick(getRows(row=a));
       }
       return a;
     }
