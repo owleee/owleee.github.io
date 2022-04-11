@@ -75,13 +75,42 @@
       margin-bottom: 10px;
     }
     #header {
-      padding: 25 0 25 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-content: center;
       flex-direction: column;
       background-color: var(--dark);
+      z-index: 999;
     }
+    #footer {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      background-color: var(--dark);
+
+      position: fixed;
+      z-index: 999;
+
+      bottom: 0;
+
+      width: 100%;
+    }
+
+    #footer > p {
+      padding-bottom: 25px;
+    }
+
+    #header > h1 {
+      padding-top: 25px;
+    }
+
+    #header > h3 {
+      padding-bottom: 20px;
+    }
+
     ::-webkit-scrollbar {
       display: none;
     }
@@ -91,9 +120,10 @@
       width: 100%;
     }
     #content {
-      padding-top: 160px;
+      padding-top: 190px;
+      padding-bottom: 100px;
     }
-    #bar {
+    .bar {
       width: 90%;
       margin: auto;
       border-bottom: 1px solid white;
@@ -118,7 +148,7 @@
   <div id="header" class="sticky">
     <h1>Country Age Calculator</h1>
     <h3>by Owleee</h3>
-    <div id="bar"></div>
+    <div class="bar"></div>
   </div>
   <div id="content">
     Enter your birthday:<br />
@@ -128,6 +158,16 @@
     <div class="break"></div>
 
     <div id="results"></div>
+    <div id="footer">
+      <div class="bar"></div>
+      <div class="break"></div>
+
+      <p>
+        Data from
+        <a href="https://flagpedia.net/lists/formation">Flagpedia</a> - Some
+        older dates are approximate
+      </p>
+    </div>
   </div>
   <script>
     const dates = {
