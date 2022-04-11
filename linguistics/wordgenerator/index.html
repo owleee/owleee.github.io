@@ -68,6 +68,16 @@
     ::-webkit-scrollbar {
       display: none;
     }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
     #row-template {
       display: none;
     }
@@ -468,7 +478,7 @@
           </div>
         </div>
         <div id="recursion-warning" class="flex fullwidth">
-          Warning: using cover symbols inside group definitions can cause
+          Warning: using cover symbols inside group definitions can cause issues due to
           recursion. Proceed at your own risk.
           <a onclick="dismiss(this)">[Dismiss]</a>
         </div>
@@ -689,6 +699,7 @@
       let syllable = parseSyllable(document.getElementById("structures").value);
       let word = [];
       for (i in syllable) word.push(recursivePick(syllable[i]));
+      saveCookies();
       return word.flat().join("");
     }
 
@@ -703,17 +714,56 @@
       saveCookies();
     }
 
-    function getRows(row=undefined) {
+    function getRows(row = undefined) {
       var classes = {};
       r = document.getElementsByClassName("row");
       for (let i = 1; i < r.length; i++) {
-        if (!r[i].childNodes[1].value == "") {
-          classes[r[i].childNodes[1].value] = r[i].childNodes[3].value
-            .replaceAll(" ", "")
-            .split(",")
+        classes[r[i].childNodes[1].value] = dictionarise(
+          r[i].childNodes[3].value.replaceAll(" ", "").split(",")
+        );
+      }
+      return row == undefined ? classes : classes[row];
+    }
+
+    function saveRows() {
+      var classes = {};
+      r = document.getElementsByClassName("row");
+      for (let i = 1; i < r.length; i++) {
+        classes[r[i].childNodes[1].value] = r[i].childNodes[3].value;
+      }
+      return classes;
+    }
+
+    function dictionarise(l) {
+      let r = {};
+      for (let i = 0; i < l.length; i++) {
+        if (/\d+/.test(l[i])) {
+          r[l[i].replaceAll(/\d+/g, "")] = parseInt(l[i].match(/\d+/)[0]);
+        } else {
+          r[l[i]] = 1;
         }
       }
-      return row==undefined ? classes : classes[row];
+      return r;
+    }
+
+    function weightedPick(prob) {
+      let i;
+      let j;
+      let total = 0;
+      let count = 0;
+
+      for (i in prob) {
+        total += prob[i];
+      }
+
+      let r = randint(1, total);
+
+      for (j in prob) {
+        count += prob[j];
+        if (count >= r) {
+          return j;
+        }
+      }
     }
 
     function recursivePick(array) {
@@ -729,7 +779,7 @@
         }
       }
       if (check(a, /[A-Z]/)) {
-        a = pick(getRows(row=a));
+        a = weightedPick(getRows((row = a)));
       }
       return a;
     }
@@ -946,7 +996,7 @@
 
     function saveCookies() {
       let cookie = {
-        rows: getRows(),
+        rows: saveRows(),
         wordStructure: document.getElementById("structures").value,
         numWords: document.getElementById("no-o-words").value,
         filter: document.getElementById("filter-dupes").checked,
@@ -1112,5 +1162,6 @@
         }
       );
     }
+    function splitList(l, c) {}
   </script>
 </body>

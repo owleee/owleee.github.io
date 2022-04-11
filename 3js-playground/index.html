@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>My first three.js app</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Impact", fantasy;
+      }
+      #info {
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        z-index: 100;
+        color: white;
+        font-size: 100px;
+      }
+      #bottom {
+        position: absolute;
+        bottom: 10px;
+        width: 100%;
+        text-align: center;
+        z-index: 100;
+        color: white;
+        font-size: 100px;
+      }
+      div {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">ME WHEN</div>
+    <div id="bottom">WEMEN</div>
+    <script src="https://threejs.org/build/three.min.js"></script>
+    <script>
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const loader = new THREE.TextureLoader();
+
+      const material = new THREE.MeshBasicMaterial({
+        map: loader.load("bama.png")
+      });
+
+      const geometry = new THREE.SphereGeometry();
+      //THREE.MeshBasicMaterial({ color: 0xff00ff });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+
+      camera.position.z = 3;
+      let i = 0;
+      camera.rotation.z = 0.2;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        //cube.rotation.x += 0.05;
+        cube.rotation.y += 0.005;
+        //camera.position.z = Math.sin(i) + 3;
+
+        i += 0.01;
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>

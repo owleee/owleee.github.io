@@ -1,0 +1,356 @@
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --red: #bd3e3e;
+      --green: #68a357;
+      --purple: #875cad;
+      --dark: #1e1e24;
+      --light: #444140;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      border: 0 none;
+      position: relative;
+      outline: none;
+      font-family: "Poppins", sans-serif;
+      color: white;
+    }
+
+    body {
+      text-align: center;
+      background-color: var(--dark);
+      font-size: 25px;
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none;
+    }
+
+    p {
+      text-align: center;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    a:before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 3px;
+      bottom: 0;
+      left: 0;
+      background: white;
+      visibility: hidden;
+      border-radius: 5px;
+      transform: scaleX(0);
+      transition: 0.1s linear;
+    }
+    a:hover:before,
+    a:focus:before {
+      visibility: visible;
+      transform: scaleX(1);
+      background-color: var(--purple);
+    }
+    a:hover,
+    a:focus {
+      color: var(--purple);
+      transition: 0.1s linear;
+    }
+    h1 {
+      font-size: 50px;
+    }
+    h2 {
+      margin-top: 10px;
+      font-size: 40px;
+    }
+    h3 {
+      font-size: 25px;
+      margin-bottom: 10px;
+    }
+    #header {
+      padding: 25 0 25 0;
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-direction: column;
+      background-color: var(--dark);
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    .sticky {
+      position: fixed;
+      top: 0;
+      width: 100%;
+    }
+    #content {
+      padding-top: 160px;
+    }
+    #bar {
+      width: 90%;
+      margin: auto;
+      border-bottom: 1px solid white;
+    }
+    .small-bar {
+      width: 80%;
+      margin: auto;
+      border-bottom: 1px solid white;
+    }
+    input {
+      background-color: var(--dark);
+      border: 1px solid white;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .break {
+      margin-top: 25px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header" class="sticky">
+    <h1>Country Age Calculator</h1>
+    <h3>by Owleee</h3>
+    <div id="bar"></div>
+  </div>
+  <div id="content">
+    Enter your birthday:<br />
+    <input type="date" id="date" onchange="calculate()" />
+    <div class="break"></div>
+    <div class="small-bar"></div>
+    <div class="break"></div>
+
+    <div id="results"></div>
+  </div>
+  <script>
+    const dates = {
+      "South Sudan": "20110709",
+      Kosovo: "20080217",
+      Serbia: "20060605",
+      Montenegro: "20060603",
+      Palau: "19941001",
+      Eritrea: "19930524",
+      Czechia: "19930101",
+      Slovakia: "19930101",
+      "Bosnia and Herzegovina": "19920301",
+      Kazakhstan: "19911216",
+      Turkmenistan: "19911027",
+      Armenia: "19910921",
+      Tajikistan: "19910909",
+      "North Macedonia": "19910908",
+      Uzbekistan: "19910901",
+      Kyrgyzstan: "19910831",
+      Azerbaijan: "19910830",
+      Moldova: "19910827",
+      Belarus: "19910825",
+      Russia: "19910824",
+      Ukraine: "19910824",
+      Latvia: "19910821",
+      Estonia: "19910820",
+      Croatia: "19910625",
+      Slovenia: "19910625",
+      Georgia: "19910409",
+      Yemen: "19900522",
+      Namibia: "19900321",
+      Lithuania: "19900311",
+      Palestine: "19881115",
+      Micronesia: "19861103",
+      "Marshall Islands": "19861021",
+      Brunei: "19840101",
+      "Saint Kitts and Nevis": "19830919",
+      "Antigua and Barbuda": "19811101",
+      Belize: "19810921",
+      Vanuatu: "19800730",
+      Zimbabwe: "19800418",
+      "Saint Vincent and the Grenadines": "19791027",
+      Kiribati: "19790712",
+      Iran: "19790401",
+      "Saint Lucia": "19790222",
+      Dominica: "19781103",
+      Tuvalu: "19781001",
+      "Solomon Islands": "19780707",
+      Djibouti: "19770627",
+      Seychelles: "19760629",
+      "Timor-Leste": "19751128",
+      Suriname: "19751125",
+      Angola: "19751111",
+      "Papua New Guinea": "19750916",
+      "São Tomé and Príncipe": "19750712",
+      Comoros: "19750706",
+      "Cape Verde": "19750705",
+      Mozambique: "19750625",
+      Niue: "19740819",
+      Grenada: "19740207",
+      "Guinea-Bissau": "19730924",
+      Bahamas: "19730710",
+      Bangladesh: "19711216",
+      "United Arab Emirates": "19711202",
+      Qatar: "19710903",
+      Bahrain: "19710815",
+      Fiji: "19701010",
+      Tonga: "19700604",
+      "Equatorial Guinea": "19681012",
+      "Eswatini (Swaziland)": "19680906",
+      Mauritius: "19680312",
+      Nauru: "19680131",
+      Barbados: "19661130",
+      Lesotho: "19661004",
+      Botswana: "19660930",
+      Guyana: "19660526",
+      Singapore: "19650809",
+      "Cook Islands": "19650808",
+      Maldives: "19650726",
+      Gambia: "19650218",
+      Zambia: "19641024",
+      Malta: "19640921",
+      Malawi: "19640706",
+      Tanzania: "19640426",
+      Kenya: "19631212",
+      "Trinidad and Tobago": "19620831",
+      Jamaica: "19620806",
+      Algeria: "19620705",
+      Burundi: "19620701",
+      Rwanda: "19620701",
+      Samoa: "19620101",
+      Kuwait: "19610619",
+      "Sierra Leone": "19610427",
+      Mauritania: "19601128",
+      Nigeria: "19601001",
+      Mali: "19600922",
+      Gabon: "19600817",
+      Cyprus: "19600816",
+      "Republic of the Congo": "19600815",
+      "Central African Republic": "19600813",
+      Chad: "19600811",
+      "Côte d'Ivoire (Ivory Coast)": "19600807",
+      "Burkina Faso": "19600805",
+      Benin: "19600801",
+      Somalia: "19600701",
+      "DR Congo": "19600630",
+      Madagascar: "19600626",
+      Togo: "19600427",
+      Senegal: "19600404",
+      Cameroon: "19600101",
+      Guinea: "19581002",
+      Malaysia: "19570831",
+      Ghana: "19570306",
+      Tunisia: "19560320",
+      Morocco: "19560302",
+      Sudan: "19560101",
+      Cambodia: "19531109",
+      Libya: "19511224",
+      Bhutan: "19490808",
+      Laos: "19490719",
+      Israel: "19480514",
+      Myanmar: "19480104",
+      India: "19470815",
+      Pakistan: "19470814",
+      Jordan: "19460525",
+      Syria: "19460417",
+      Vietnam: "19450902",
+      Indonesia: "19450817",
+      "North Korea": "19450815",
+      "South Korea": "19450815",
+      Lebanon: "19431122",
+      Iraq: "19321003",
+      "Saudi Arabia": "19320923",
+      "Vatican City (Holy See)": "19290211",
+      Turkey: "19231029",
+      Egypt: "19220228",
+      Ireland: "19211206",
+      Mongolia: "19210711",
+      Afghanistan: "19190819",
+      Iceland: "19181201",
+      Poland: "19181111",
+      Finland: "19171206",
+      Albania: "19121128",
+      "South Africa": "19100531",
+      "New Zealand": "19070926",
+      Norway: "19050607",
+      Panama: "19031103",
+      Cuba: "19020520",
+      Australia: "19010101",
+      Philippines: "18980612",
+      Bulgaria: "18780303",
+      Romania: "18770509",
+      Germany: "18710118",
+      Canada: "18670701",
+      Italy: "18610317",
+      Denmark: "18490101",
+      Liberia: "18470726",
+      "Dominican Republic": "18440227",
+      Luxembourg: "18390101",
+      Belgium: "18301004",
+      Greece: "18290101",
+      Uruguay: "18250825",
+      Bolivia: "18250806",
+      Brazil: "18220907",
+      Ecuador: "18220524",
+      "Costa Rica": "18210915",
+      "El Salvador": "18210915",
+      Guatemala: "18210915",
+      Honduras: "18210915",
+      Nicaragua: "18210915",
+      Peru: "18210728",
+      Argentina: "18160709",
+      Venezuela: "18110705",
+      Paraguay: "18110514",
+      Chile: "18100918",
+      Mexico: "18100916",
+      Colombia: "18100720",
+      Haiti: "18040101",
+      "United States": "17760704",
+      Nepal: "17680101",
+      Liechtenstein: "17190123",
+      "United Kingdom": "17070101",
+      Oman: "16500101",
+      Netherlands: "15790123",
+      Sweden: "15230606",
+      Spain: "14920102",
+      Monaco: "14190101",
+      Switzerland: "12910801",
+      Andorra: "12780101",
+      Thailand: "12380101",
+      Austria: "11560101",
+      Portugal: "11430101",
+      Hungary: "10010101",
+      France: "04860101"
+    };
+    function calculate() {
+      let date = document.getElementById("date").value.replaceAll("-", ""); // Date in format YYYYMMDD
+      let younger = [];
+      Object.keys(dates).forEach(function (i) {
+        if (dates[i] > date) {
+          younger.push(dates[i] + " - " + i);
+        }
+      });
+      younger.sort();
+      document.getElementById("results").innerHTML = "";
+      if (date == "") return;
+      document.getElementById("results").innerHTML =
+        "<h2>You are older than:</h2>";
+      younger.forEach(function (i) {
+        let c = i.split(" - ")[1] + " - " + formatDate(i.split(" - ")[0]);
+        document.getElementById("results").innerHTML += c + "<br>"; //`<img src=${getFlagLink(c.split(" - ")[0])}>` +
+      });
+    }
+    function formatDate(date) {
+      //Format YYYYMMDD -> DD/MM/YYYY
+      let formattedDate = `${date.slice(6, 8)}/${date.slice(4, 6)}/${date.slice(
+        0,
+        4
+      )}`;
+      return formattedDate;
+    }
+    function getFlagLink(name) {
+      return ``;
+    }
+  </script>
+</body>

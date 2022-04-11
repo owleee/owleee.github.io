@@ -1,0 +1,44 @@
+<head>
+  <title> </title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+  <script>
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    var clock = new THREE.Clock();
+    var delta;
+    camera.position.z = 5;
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setClearColor("#8f8f8f");
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener("resize", () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    function tick() {
+      requestAnimationFrame(tick);
+
+      delta = clock.getDelta();
+
+      renderer.render(scene, camera);
+    }
+
+    tick();
+  </script>
+</body>

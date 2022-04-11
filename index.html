@@ -64,24 +64,19 @@
       transition: 0.1s linear;
     }
     h1 {
-      margin: 15px 0px 0px 0px;
       font-size: 50px;
     }
     h2 {
-      margin: 25px 0px;
+      margin-top: 10px;
       font-size: 40px;
     }
-    #body {
-      margin: 0 25px;
-    }
     #header {
+      padding: 25 0 25 0;
       display: flex;
       justify-content: center;
       align-content: center;
       flex-direction: column;
-      border-bottom: 1px solid white;
       background-color: var(--dark);
-      padding: 0 20px;
     }
     ::-webkit-scrollbar {
       display: none;
@@ -91,16 +86,25 @@
       top: 0;
       width: 100%;
     }
+    #content {
+      padding-top: 110px;
+    }
+    #bar {
+      width: 90%;
+      margin: auto;
+      border: 1px solid white;
+    }
   </style>
 </head>
 <body>
-  <div id="body">
-    <div id="header">
-      <h1>Owleee's Web Projects</h1>
-    </div>
-    <div id="content">
-      <h2>Linguistics</h2>
-      <a href="wordgenerator/index.html">Word Generator</a>
-    </div>
+  <div id="header" class="sticky">
+    <h1>Owleee's Web Projects</h1>
+    <div id="bar"></div>
+  </div>
+  <div id="content">
+    <h2>Linguistics</h2>
+    <a href="linguistics/wordgenerator/index.html">Word Generator</a>
+    <h2>Fun</h2>
+    <a href="fun/country-age/index.html">How many countries am I older than?</a>
   </div>
 </body>
