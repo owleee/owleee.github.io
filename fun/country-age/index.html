@@ -5,6 +5,7 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap"
     rel="stylesheet"
   />
+  <title>Country Age Comparator - OWP</title>
   <style>
     :root {
       --red: #bd3e3e;
@@ -165,7 +166,7 @@
       <p>
         Data from
         <a href="https://flagpedia.net/lists/formation">Flagpedia</a> - Some
-        older dates are approximate
+        older dates may be approximate
       </p>
     </div>
   </div>
@@ -366,16 +367,25 @@
     function calculate() {
       let date = document.getElementById("date").value.replaceAll("-", ""); // Date in format YYYYMMDD
       let younger = [];
+      let exactly = "";
       Object.keys(dates).forEach(function (i) {
         if (dates[i] > date) {
           younger.push(dates[i] + " - " + i);
+        } else if (dates[i] == date) {
+          exactly = i + ` (${formatDate(dates[i])})`;
         }
       });
       younger.sort();
       document.getElementById("results").innerHTML = "";
       if (date == "") return;
       document.getElementById("results").innerHTML =
-        "<h2>You are older than:</h2>";
+        younger.length != 1
+          ? `<h2>You are older than ${younger.length} countries:</h2>`
+          : "<h2>You are older than one country:</h2>";
+      if (exactly != "")
+        document.getElementById("results").innerHTML =
+          `You are exactly as old as ${exactly}!<br>` +
+          document.getElementById("results").innerHTML;
       younger.forEach(function (i) {
         let c = i.split(" - ")[1] + " - " + formatDate(i.split(" - ")[0]);
         document.getElementById("results").innerHTML += c + "<br>"; //`<img src=${getFlagLink(c.split(" - ")[0])}>` +
