@@ -171,6 +171,7 @@
     </div>
   </div>
   <script>
+    document.getElementById("date").value = document.cookie;
     const dates = {
       "South Sudan": "20110709",
       Kosovo: "20080217",
@@ -206,7 +207,7 @@
       "Marshall Islands": "19861021",
       Brunei: "19840101",
       "Saint Kitts and Nevis": "19830919",
-      "Antigua and Barbuda": "19811101",
+      "Antigua and Barbuda": "19811000",
       Belize: "19810921",
       Vanuatu: "19800730",
       Zimbabwe: "19800418",
@@ -223,7 +224,7 @@
       Suriname: "19751125",
       Angola: "19751111",
       "Papua New Guinea": "19750916",
-      "São Tomé and Príncipe": "19750712",
+      "S&atilde;o Tom&eacute; and Pr&iacute;ncipe": "19750712",
       Comoros: "19750706",
       "Cape Verde": "19750705",
       Mozambique: "19750625",
@@ -238,7 +239,7 @@
       Fiji: "19701010",
       Tonga: "19700604",
       "Equatorial Guinea": "19681012",
-      "Eswatini (Swaziland)": "19680906",
+      Eswatini: "19680906",
       Mauritius: "19680312",
       Nauru: "19680131",
       Barbados: "19661130",
@@ -270,11 +271,11 @@
       "Republic of the Congo": "19600815",
       "Central African Republic": "19600813",
       Chad: "19600811",
-      "Côte d'Ivoire (Ivory Coast)": "19600807",
+      "C&ocirc;te d'Ivoire": "19600807",
       "Burkina Faso": "19600805",
       Benin: "19600801",
       Somalia: "19600701",
-      "DR Congo": "19600630",
+      "Democratic Republic of the Congo": "19600630",
       Madagascar: "19600626",
       Togo: "19600427",
       Senegal: "19600404",
@@ -302,7 +303,7 @@
       Lebanon: "19431122",
       Iraq: "19321003",
       "Saudi Arabia": "19320923",
-      "Vatican City (Holy See)": "19290211",
+      "Vatican City": "19290211",
       Turkey: "19231029",
       Egypt: "19220228",
       Ireland: "19211206",
@@ -324,12 +325,12 @@
       Germany: "18710118",
       Canada: "18670701",
       Italy: "18610317",
-      Denmark: "18490101",
+      Denmark: "18490000",
       Liberia: "18470726",
       "Dominican Republic": "18440227",
-      Luxembourg: "18390101",
+      Luxembourg: "18390000",
       Belgium: "18301004",
-      Greece: "18290101",
+      Greece: "18290000",
       Uruguay: "18250825",
       Bolivia: "18250806",
       Brazil: "18220907",
@@ -346,25 +347,28 @@
       Chile: "18100918",
       Mexico: "18100916",
       Colombia: "18100720",
-      Haiti: "18040101",
+      Haiti: "18040000",
       "United States": "17760704",
-      Nepal: "17680101",
+      Nepal: "17680000",
       Liechtenstein: "17190123",
-      "United Kingdom": "17070101",
-      Oman: "16500101",
+      "United Kingdom": "17070000",
+      Oman: "16500000",
       Netherlands: "15790123",
       Sweden: "15230606",
       Spain: "14920102",
-      Monaco: "14190101",
-      Switzerland: "12910801",
-      Andorra: "12780101",
-      Thailand: "12380101",
-      Austria: "11560101",
-      Portugal: "11430101",
-      Hungary: "10010101",
-      France: "04860101"
+      Monaco: "14190000",
+      Switzerland: "12910000",
+      Andorra: "12780000",
+      Thailand: "12380000",
+      Austria: "11560000",
+      Portugal: "11430000",
+      Hungary: "10000000",
+      France: "04860000"
     };
+    calculate();
+
     function calculate() {
+      document.cookie = document.getElementById("date").value;
       let date = document.getElementById("date").value.replaceAll("-", ""); // Date in format YYYYMMDD
       let younger = [];
       let exactly = "";
@@ -393,6 +397,8 @@
     }
     function formatDate(date) {
       //Format YYYYMMDD -> DD/MM/YYYY
+      if (date.includes("0000"))
+        return date.slice(0, 4).replace(/^0+/, "") + " AD";
       let formattedDate = `${date.slice(6, 8)}/${date.slice(4, 6)}/${date.slice(
         0,
         4

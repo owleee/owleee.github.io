@@ -106,12 +106,12 @@
       font-size: 20px;
       font-weight: bold;
     }
-    #generate {
+    #generate, #clear {
       font-size: 17.5px;
       height: 30px;
       font-weight: normal;
     }
-    #generate:hover {
+    #generate:hover, #clear:hover {
       transition: 0.2s;
       background-color: var(--purple);
     }
@@ -543,6 +543,9 @@
         </div>
         <div class="generator-control flex">
           <input id="new-lines" class="checkbox" type="checkbox" /> New Lines
+        </div>
+        <div class="generator-control flex">
+          <button id="clear" onclick="document.getElementById('generated').innerHTML = ''">Clear Generated</button>
         </div>
       </div>
       <p id="generated"></p>
