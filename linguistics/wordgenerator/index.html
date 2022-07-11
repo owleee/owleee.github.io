@@ -338,6 +338,7 @@
     }
     #logs-panel {
       box-shadow: 0px 0px 10px 10px var(--light);
+      display:none;
     }
     #generated-panel {
       margin-bottom: 70px;
@@ -861,7 +862,7 @@
     }
 
     function validateSyllable(input) {
-      let illegal = "=-<>§[]{}";
+      let illegal = "=<>§[]{}";
       for (let i = 0; i < illegal.length; i++) {
         if (input.value.includes(illegal[i])) {
           input.value = input.value.replaceAll(illegal[i], "");
@@ -1018,7 +1019,7 @@
         document.getElementById("no-o-words").value = cookie.numWords;
         document.getElementById("filter-dupes").checked = cookie.filter;
         document.getElementById("new-lines").checked = cookie.newLines;
-        document.getElementById("generated").innerHTML = cookie.generated;
+        document.getElementById("generated").innerHTML = "";
 
         if (Object.keys(cookie.rows).length == 0) addRow();
 
@@ -1073,12 +1074,11 @@
     }
     function exportCookies() {
       let cookie = {
-        rows: getRows(),
+        rows: saveRows(),
         wordStructure: document.getElementById("structures").value,
         numWords: document.getElementById("no-o-words").value,
         filter: document.getElementById("filter-dupes").checked,
         newLines: document.getElementById("new-lines").checked,
-        generated: document.getElementById("generated").innerHTML
       };
       cookie = JSON.stringify(cookie);
       copyTextToClipboard(cookie);
@@ -1101,18 +1101,20 @@
       document.getElementById("generated").innerHTML = cookie.generated;
 
       deleteAllRows();
+      deleteAllRows();
 
       if (Object.keys(cookie.rows).length == 0) {
         addRow();
       } else {
         for (i in cookie.rows) {
           addRow();
+          console.log(cookie.rows[i])
           let r = document.getElementsByClassName("row");
           r[r.length - 1].childNodes[1].value = i;
           r[r.length - 1].childNodes[3].value = cookie.rows[i];
           cleanContents(r[r.length - 1].childNodes[3]);
         }
-        console.log(rows);
+        
         update();
       }
       document.getElementById("loaded-text").innerHTML =
