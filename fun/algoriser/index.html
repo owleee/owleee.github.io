@@ -1,0 +1,92 @@
+<head>
+  <title>Algoriser</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+    #alginput {
+      width: 100%;
+    }
+    #algo {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <input id="alginput" type="text" placeholder="Enter algorithm..." />
+  <button id="done" onclick="generate()">Done</button>
+  <div id="error" style="display: none;">Error: Unrecognised notation</div>
+
+  <div id="algo"></div>
+  <script>
+    const validNotation = [
+      "U",
+      "D",
+      "R",
+      "L",
+      "F",
+      "B",
+      "U'",
+      "D'",
+      "R'",
+      "L'",
+      "F'",
+      "B'",
+      "U2",
+      "D2",
+      "R2",
+      "L2",
+      "F2",
+      "B2",
+      "u",
+      "d",
+      "r",
+      "l",
+      "f",
+      "b",
+      "u'",
+      "d'",
+      "r'",
+      "l'",
+      "f'",
+      "b'",
+      "u2",
+      "d2",
+      "r2",
+      "l2",
+      "f2",
+      "b2",
+      "x",
+      "y",
+      "z",
+      "x'",
+      "y'",
+      "z'",
+      "x2",
+      "y2",
+      "z2"
+    ];
+    function generate() {
+      document.getElementById("algo").innerHTML = "";
+      let algo = document.getElementById("alginput").value.trim().split(" ");
+      if (
+        algo.filter(function (i) {
+          return !validNotation.includes(i);
+        }).length != 0
+      ) {
+        document.getElementById("error").style = "display: block;";
+        return;
+      }
+      document.getElementById("error").style = "display: none;";
+      algo.forEach(function (i) {
+        document.getElementById(
+          "algo"
+        ).innerHTML += `<img src="src/img/${i}.png" alt="${i}" width=150 height=150>`;
+      });
+    }
+  </script>
+</body>
