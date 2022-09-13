@@ -5,6 +5,8 @@
       display: flex;
       align-items: center;
       flex-direction: column;
+      justify-content: center;
+      text-align: center;
     }
     #alginput {
       width: 100%;
@@ -14,12 +16,17 @@
       flex-direction: row;
       flex-wrap: wrap;
     }
+    .algpanel {
+      display: flex;
+      flex-direction: column;
+      margin: 10px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <input id="alginput" type="text" placeholder="Enter algorithm..." />
   <button id="done" onclick="generate()">Done</button>
-  <div id="error" style="display: none;">Error: Unrecognised notation</div>
 
   <div id="algo"></div>
   <script>
@@ -78,14 +85,14 @@
           return !validNotation.includes(i);
         }).length != 0
       ) {
-        document.getElementById("error").style = "display: block;";
+        document.getElementById("algo").innerHTML = "Unrecognised notation.";
         return;
       }
-      document.getElementById("error").style = "display: none;";
+      document.getElementById("algo").innerHTML = "";
       algo.forEach(function (i) {
         document.getElementById(
           "algo"
-        ).innerHTML += `<img src="src/img/${i}.png" alt="${i}" width=150 height=150>`;
+        ).innerHTML += `<div class="algpanel"><img src="src/${i}.svg" alt="${i}" width=150 height=150>${i}</div>`;
       });
     }
   </script>
