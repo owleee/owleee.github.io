@@ -198,7 +198,6 @@ const populateWords = (number) => {
   let leftWords = [];
   let rightWords = [];
 
-  console.log(n + number);
   let old_n = n;
   for (let i = old_n; i < old_n + number; i++) {
     try {
@@ -209,7 +208,6 @@ const populateWords = (number) => {
       break;
     }
   }
-  console.log(leftWords, rightWords);
 
   shuffle(leftWords);
   shuffle(rightWords);
@@ -238,17 +236,27 @@ updateOptions();
 data = generateData();
 
 const reset = () => {
-  $("#left-words").style.animation = "1s disappear";
-  $("#right-words").style.animation = "1s disappear";
+  $("#card").style.animation = "0.2s disappear";
+};
 
-  $("#left-words").innerHTML = "";
-  $("#right-words").innerHTML = "";
+document.addEventListener("animationend", (e) => {
+  if (e.animationName === "disappear") {
+    $("#left-words").innerHTML = "";
+    $("#right-words").innerHTML = "";
+    $("#card").style.animation = "0.2s reappear";
 
-  main();
+    main();
+  }
+});
+
+$("#card").style.height = window.getComputedStyle($(".main")[0]).height;
+
+window.onresize = () => {
+  $("#card").style.height = window.getComputedStyle($(".main")[0]).height;
 };
 
 const main = () => {
-  var total = randint(7, 10);
+  var total = randint(7, 8);
   var correct = 0;
   populateWords(total);
 
