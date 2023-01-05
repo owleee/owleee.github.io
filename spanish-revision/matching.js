@@ -83,6 +83,8 @@ $("#topics").style.left = "-700px";
 
 const closeMenu = () => {
   if ($("#topics").style.left !== "-700px") {
+    totalCorrect = 0;
+    totalWrong = 0;
     $("#topics").style.left = "-700px";
     data = generateData();
     saveCookies();
@@ -239,8 +241,6 @@ updateOptions();
 data = generateData();
 
 const reset = () => {
-  totalCorrect = 0;
-  totalWrong = 0;
   $("#card").style.animation = "0.2s disappear";
 };
 
