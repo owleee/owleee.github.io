@@ -239,6 +239,8 @@ updateOptions();
 data = generateData();
 
 const reset = () => {
+  totalCorrect = 0;
+  totalWrong = 0;
   $("#card").style.animation = "0.2s disappear";
 };
 
@@ -259,8 +261,6 @@ window.onresize = () => {
 };
 
 const main = () => {
-  totalCorrect = 0;
-  totalWrong = 0;
   var total = randint(7, 8);
   var correct = 0;
   populateWords(total);
