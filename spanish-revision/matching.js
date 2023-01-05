@@ -194,6 +194,9 @@ var answers = [null, null];
 var selected = [null, null];
 var correct = 0;
 
+var totalCorrect = 0;
+var totalWrong = 0;
+
 const populateWords = (number) => {
   let leftWords = [];
   let rightWords = [];
@@ -256,6 +259,8 @@ window.onresize = () => {
 };
 
 const main = () => {
+  totalCorrect = 0;
+  totalWrong = 0;
   var total = randint(7, 8);
   var correct = 0;
   populateWords(total);
@@ -300,6 +305,8 @@ const main = () => {
         $(`#L${selected[0]}`).style.animation = "0.5s fade-green";
         $(`#R${selected[1]}`).style.animation = "0.5s fade-green";
 
+        totalCorrect++;
+
         $(`#L${selected[0]}`).classList.add("done");
         $(`#R${selected[1]}`).classList.add("done");
 
@@ -313,8 +320,11 @@ const main = () => {
       } else {
         $(`#L${selected[0]}`).style.animation = "0.5s fade-red";
         $(`#R${selected[1]}`).style.animation = "0.5s fade-red";
+        totalWrong++;
       }
       selected = [null, null];
+      $("#correct").innerHTML = totalCorrect;
+      $("#wrong").innerHTML = totalWrong;
     });
   });
 

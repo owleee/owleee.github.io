@@ -27,7 +27,7 @@
       background-size: 100% 100%;
       text-align: center;
     }
-    a {
+    .button {
       border: none;
       background-color: #444;
       width: 60%;
@@ -44,26 +44,32 @@
       align-items: center;
       text-decoration: none;
     }
-    a:hover {
+    .button:hover {
       box-shadow: 0px 0px 50px white;
       background-color: #ad1519;
+    }
+    p > a {
+      text-decoration: none;
+      color: #fabd00;
     }
     p {
       width: 60%;
     }
   </style>
 </head>
-<body>
+<body class="no-select">
   <h1>Spanish Revision Portal</h1>
-  <a class="shadow" href="./flashcards.html">Flashcards</a>
-  <a class="shadow" href="./matching.html">Vocab Matching</a>
+  <a class="shadow button" href="./flashcards.html">Flashcards</a>
+  <a class="shadow button" href="./matching.html">Vocab Matching</a>
   <p>
     Disclaimer: this web app is still in alpha, so it may not fully work on all
     devices. I'm working on improving compatibility.
   </p>
   <p>
     If you encounter any bugs or have any suggestions, feel free to let me know
-    via school email or in person.
+    via <a href="" title="this is a public webpage i'm not sharing it here">school email<a>,
+    <a href="https://github.com/Owleee/owleee.github.io/issues">github</a> or in
+    person.
   </p>
 </body>
 <script></script>

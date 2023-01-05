@@ -22,7 +22,8 @@
   background-color: #ad1519;
   color: white;
 }
-.icon-button > img {
+.icon-button > img,
+.small-image {
   height: 40px;
   width: 40px;
   margin: 2.5px;
