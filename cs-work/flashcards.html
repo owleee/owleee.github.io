@@ -1,0 +1,316 @@
+<head>
+  <title>
+    Spanish Flashcards
+  </title>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kanit&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="flip.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0px;
+      font-family: "Kanit", sans-serif;
+      font-size: 30px;
+      background-color: #222;
+      color: white;
+      overflow-x: hidden;
+      overflow-y: hidden;
+      transition:0.3s;
+    }
+    .main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 90%;
+      background-image:url("https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Simplified_Flag_of_Spain_%28civil_variant%29.svg/2560px-Simplified_Flag_of_Spain_%28civil_variant%29.svg.png");
+      transition:0.3s;
+      /*background-image:url("https://www.crossed-flag-pins.com/animated-flag-gif/gifs/Spain_240-animated-flag-gifs.gif");
+      */background-position: center;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+
+      }
+    .card {
+      width: 800px;
+      height: 450px;
+      padding: 10px;
+      font-size: 80;
+      text-align: center;
+      left: 0px;
+    }
+    @keyframes slide-out-left {
+      from {
+        left: 0px;
+      }
+      to {
+        left: 120%;
+      }
+    }
+    @keyframes slide-out-right {
+      from {
+        left: 0px;
+      }
+      to {
+        left: -120%;
+      }
+    }
+
+    @keyframes slide-in-from-right {
+      from {
+        left: 120%;
+      }
+      to {
+        left: 0px;
+      }
+    }
+    @keyframes slide-in-from-left {
+      from {
+        left: -120%;
+      }
+      to {
+        left: 0px;
+      }
+    }
+    @keyframes fade {
+      from {
+        background-color:#444
+      }
+      to {
+        background-color:#fabd00
+      }
+    }
+
+    .card,
+    .button {
+      background-color: #444;
+      text-align: center;
+      box-shadow: 0px 0px 50px black;
+      background-color: #444;
+      border-radius: 10px;
+    }
+    .button {
+      width: 100px;
+      height: 100px;
+      margin: 0px 50px;
+      background-color: #444;
+      border: none;
+      text-align: center;
+      font-size: 100px;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button:hover {
+      box-shadow: 0px 0px 50px white;
+      background-color: #ad1519;
+      color: white;
+    }
+    #topics {
+      bottom:10%;
+      left:-700px;
+      width: auto;
+      height: 80%;
+      background-color: #444;
+      position: absolute;
+      box-shadow: 0px 0px 50px black;
+      border-radius: 10px 10px 10px 0px;
+      padding:10px;
+      transition:0.3s;
+      padding:20px;
+    }
+    #topics-content{
+      height:100%;
+      overflow:scroll;
+    }
+    #topics-content::-webkit-scrollbar {
+  display: none;
+}
+    
+
+    .bar {
+      width: 100%;
+      height: 10%;
+      background-color: #444;
+      display: flex;
+      flex-direction: row;
+      box-shadow: 0px 0px 50px black;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-padding {
+      width: 750px;
+      height: 400px;
+      text-align:center;
+      display:flex;
+      align-items:center;
+      align-content: center;
+    }
+    .card-content{
+      margin:auto;
+    }
+    #selection>label{
+      background-color:#444;
+      font-size:25px;
+      padding:3.5px 10px;
+      margin-left:15px;
+    }
+    #selection>label:hover {
+      box-shadow: 0px 0px 50px white;
+      background-color: #ad1519;
+      color: white;
+    }
+
+    #number-input{
+      background-color:#222;
+      border-radius: 10px;
+      width:100px;
+      border: none;
+      font-family: "Kanit", sans-serif;
+      box-shadow: inset 0px 0px 25px black;
+      font-size: 30px;
+      color: white;
+      padding:0px 10px;
+      text-align:right;
+    }
+    .icon-button {
+      width:45px;
+      height:45px;
+      transition: 0.3s;
+      margin-right:15px;
+    }
+    .icon-button:hover{
+      
+      box-shadow: 0px 0px 50px white;
+      background-color: #ad1519;
+      color: white;
+    }
+    .icon-button>img {
+      height:40px;
+      width:40px;
+      margin:2.5px;
+      filter: invert(100);
+    }
+    .topic {
+      display:flex;
+    }
+    .topic-checkbox {
+      display:none;
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    .topic-checkbox:checked ~ label {
+      color:white;
+    }
+    label {
+      color: #222
+    }
+
+    #number {
+      display:flex;
+      flex-direction: row;
+      width: 20%;
+justify-content: center;  
+    }
+    #selection{
+      justify-content: left;
+      width:40%;
+    }
+    #settings{
+      width:40%;
+      display:flex;
+      justify-content: left;
+
+    }
+    #number-spacing{
+      display:flex;
+    }
+
+    #right-button>img{
+      transform:rotate(180deg)
+    }
+    .button>img{
+      height:60px;
+      width:60px;
+      filter:invert(100)
+    }
+
+    #select-topics {
+      margin-left:15px;
+    }
+    #back {
+      position:absolute;
+      left:10px;
+      top:10px;
+      background-color: #444;
+      color:white;
+      padding:5px;
+      text-decoration: none;
+      transition:0.3s
+    }
+    #back:hover{
+      box-shadow: 0px 0px 50px white;
+      background-color:#fabd00;
+      color: white;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="main no-select">
+    <a id="back" class="shadow icon-button" href="./index.html">
+      <img src="https://cdn-icons-png.flaticon.com/512/0/340.png" alt="">
+</a>
+    <div id="left-button" class="button"><img src="https://cdn-icons-png.flaticon.com/512/271/271220.png" alt=""></div>
+    <div class="flip-card">
+      <div class="card flip-card-inner">
+        <div class="flip-card-front">
+          <div class="front-padding card-padding">
+              <div class="front-content card-content"></div>
+
+          </div>
+        </div>
+        <div class="flip-card-back">
+            <div class="back-padding card-padding">
+              <div class="back-content card-content"></div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div id="right-button" class="button"><img src="https://cdn-icons-png.flaticon.com/512/271/271220.png" alt=""></div>
+  </div>
+  <div class="bar no-select">
+      <div id="selection" class="bar-wide">
+        <div id="select-topics" class="icon-button shadow">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Hamburger_icon.svg/2048px-Hamburger_icon.svg.png" alt="">
+        </div>
+          <div id="topics">
+            <div id="topics-content"></div>
+          </div>
+      </div>
+    <div id="number">
+        <div id="number-spacing"><input type="number" id="number-input" min=1></input>
+      <div id="total-number"></div></div>
+    </div>
+    <div id="settings" class="bar-wide">
+      <div id="settings-randomise" class="shadow icon-button" title="Randomise order">
+        <img src="https://cdn-icons-png.flaticon.com/512/3580/3580329.png">
+      </div>
+      <div id="settings-language" class="icon-button shadow" title="Flip cards">
+        <img src="https://static.thenounproject.com/png/267318-200.png">
+      </div>
+    </div>
+  </div>
+</body>
+<script src="data.js" type="module"></script>
+<script src="flashcards.js" type="module"></script>

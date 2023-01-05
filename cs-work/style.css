@@ -1,0 +1,30 @@
+.no-select {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -o-user-select: none;
+}
+
+.shadow {
+  border-radius: 10px;
+  box-shadow: 0px 0px 50px black;
+}
+
+.icon-button {
+  width: 45px;
+  height: 45px;
+  transition: 0.3s;
+  margin-right: 15px;
+}
+.icon-button:hover {
+  box-shadow: 0px 0px 50px white;
+  background-color: #ad1519;
+  color: white;
+}
+.icon-button > img {
+  height: 40px;
+  width: 40px;
+  margin: 2.5px;
+  filter: invert(100);
+}

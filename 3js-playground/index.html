@@ -51,7 +51,7 @@
       const loader = new THREE.TextureLoader();
 
       const material = new THREE.MeshBasicMaterial({
-        map: loader.load("bama.png")
+        map: loader.load("lobster.webp")
       });
 
       const geometry = new THREE.SphereGeometry();
@@ -65,9 +65,9 @@
 
       function animate() {
         requestAnimationFrame(animate);
-        //cube.rotation.x += 0.05;
+        cube.rotation.x += 0.05;
         cube.rotation.y += 0.005;
-        //camera.position.z = Math.sin(i) + 3;
+        camera.position.z = Math.sin(i) + 3;
 
         i += 0.01;
         renderer.render(scene, camera);
