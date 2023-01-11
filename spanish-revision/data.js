@@ -729,7 +729,7 @@ const DATA = [
     "las ofertas de trabajo": "situations vacant",
     "la agencia de colocación": "employment agency",
     "hacer oposiciones": "to seek a job by public competition",
-    "el currículum (vitae)": "CV (curriculum vitae)",
+    "el currículum (vitae)": "CV",
     "los datos personales": "personal data",
     "los títulos académicos": "academic qualifications",
     "la experiencia profesional": "professional experience",

@@ -111,6 +111,14 @@ $("#settings-randomise").addEventListener("click", () => {
   saveCookies();
 });
 
+$("#reset").onclick = () => {
+  data = generateData();
+  saveCookies();
+  reset();
+  saveCookies();
+  $("#correct").innerText = $("#wrong").innerText = "0";
+};
+
 document.addEventListener("click", (e) => {
   if (
     !e.composedPath().includes($("#select-topics")) &&
