@@ -121,6 +121,10 @@ const updateCard = () => {
   //$(".main")[0].style["background-image"] = `url(${IMAGES[data[n - 1][2]]})`;
 };
 
+const getTextHeight = () => {
+  console.log(window.getComputedStyle($(".front-content")[0]).height);
+};
+
 document.addEventListener("animationend", (e) => {
   if (e.animationName === "slide-out-left") {
     updateCard();
