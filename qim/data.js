@@ -1,6 +1,4 @@
-import GameObject from "/atom-game/object.js";
-
-const elements = [
+export const elements = [
   "Hydrogen",
   "Helium",
   "Lithium",
@@ -121,7 +119,7 @@ const elements = [
   "Oganesson"
 ];
 
-const symbols = [
+export const symbols = [
   "H",
   "He",
   "Li",
@@ -242,7 +240,7 @@ const symbols = [
   "Og"
 ];
 
-const shells = [
+export const shells = [
   ["1"],
   ["2"],
   ["2", "1"],
@@ -362,64 +360,3 @@ const shells = [
   ["2", "8", "18", "32", "32", "18", "7"],
   ["2", "8", "18", "32", "32", "18", "8"]
 ];
-
-const TAU = Math.PI * 2;
-
-export default class Atom extends GameObject {
-  constructor(game, x = 0, y = 0) {
-    super(game, x, y);
-
-    this.neutrons = 0;
-
-    this._protons = null;
-    this.protons = 16;
-
-    this.element = "Hydrogen";
-    this.symbol = "H";
-    this.electrons = 1;
-    this.isotope = this.protons + this.neutrons;
-  }
-  draw(ctx) {
-    shells[this.protons - 1].forEach((v, i) => {
-      ctx.beginPath();
-      ctx.arc(
-        this.game.fx(this.x),
-        this.game.fy(this.y),
-        15 * (i + 1),
-        0,
-        2 * Math.PI
-      );
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      for (let j = 0; j < v; j++) {
-        ctx.beginPath();
-        let val = this.game.time / 500 / Math.sqrt(i + 1) - (j * TAU) / v;
-        let neg = i % 2 === 0 ? 1 : -1;
-        ctx.arc(
-          this.game.fx(neg * 15 * (i + 1) * Math.sin(val) + this.x),
-          this.game.fy(15 * (i + 1) * Math.cos(val) + this.y),
-          3,
-          0,
-          2 * Math.PI
-        ); // Arc for a full circle
-        ctx.fillStyle = "#031926";
-        ctx.fill();
-        ctx.closePath();
-      }
-    });
-  }
-  set protons(v) {
-    this._protons = v;
-    this.element = elements[this.protons - 1];
-    this.symbol = symbols[this.protons - 1];
-    this.electrons = this.protons;
-    this.isotope = this.protons + this.neutrons;
-    console.log(`The atom is ${this.element}-${this.isotope} (${this.symbol})`);
-  }
-  get protons() {
-    return this._protons;
-  }
-  update(deltaTime) {
-    //this.x += 0.1 * deltaTime;
-  }
-}
