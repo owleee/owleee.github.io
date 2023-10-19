@@ -11,6 +11,7 @@ export default class Button {
     this.width = width;
     this.height = height;
     this.hovered = false;
+    this.clickable = false;
     this.shape = "rectangle"; // or "circle"
     this.greyed = false;
 
@@ -57,12 +58,15 @@ export default class Button {
       this.hovered && !this.greyed ? this.textStyleHover : this.textStyle
     );
   }
+  updateText(b) { }
 
   update(deltaTime) {
     if (!this.gamestate.includes(this.game.gamestate)) {
       this.hovered = false;
+      this.clickable = false;
       return;
     }
+    this.updateText(this)
 
     this.x = this.xF();
     this.y = this.yF();
@@ -88,7 +92,7 @@ export default class Button {
       if (this.hovered) {
         if (this.clickable) {
           this.clickFunction();
-          this.clickable = 0;
+          this.clickable = false;
         }
       } else {
         this.clickable = false;
@@ -100,6 +104,20 @@ export default class Button {
     }
   }
 }
+
+export class TextButton extends Button {
+  draw(ctx) {
+    if (!this.gamestate.includes(this.game.gamestate)) return;
+    text(
+      ctx,
+      this.x,
+      this.y,
+      `${this.hovered ? "> " : ""}${L(this.label, this.game.lang)}${this.hovered ? " <" : ""}`,
+      this.textStyle
+    );
+  }
+}
+
 
 export class FunFactText {
   constructor(game, x, y, text) {

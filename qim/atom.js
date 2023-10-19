@@ -63,7 +63,7 @@ export default class Atom extends GameObject {
     // Add initial proton //
     this.addProton();
   }
-  get type() { return "atom"; }
+  get class() { return "atom"; }
 
   addProton(n = 1) {
     // Add a proton to the atom // TODO - clean up?
@@ -123,12 +123,13 @@ export default class Atom extends GameObject {
   }
 
   takeDamage(damage = 1) {
+    this.game.addScore(damage);
     for (let i = 0; i < damage; i++) {
       if (this.nucleons.length <= 0) return;
       let damaged = this.nucleons[this.nucleons.length - 1];
       if (damaged === "neutron") {
         this.addNeutron(-1)
-      } else {
+      } else if (damaged === "proton") {
         this.addProton(-1)
       }
       for (let i = 0; i < randint(5, 10); i++) {
@@ -192,9 +193,11 @@ export default class Atom extends GameObject {
     );*/
 
     // Iterate over each electron shell //
-    shells[this.protons].forEach((v, i) => {
+    let s = this.game.settings.simplerElectrons === 2 ? [shells[this.protons][shells[this.protons].length - 1]] : shells[this.protons]
+    let l = shells[this.protons].length - 1
+    s.forEach((v, i) => {
       // Calculate the radius of the shell and draw it //
-      let radius = 15 * (i + 1) + this.nucleusRadius;
+      let radius = 15 * ((this.game.settings.simplerElectrons === 2 ? l : i) + 1) + this.nucleusRadius;
       circle(
         ctx,
         this.game.fx(this.x),
@@ -218,32 +221,40 @@ export default class Atom extends GameObject {
           (j * TAU) / v;
 
         // Draw the electron
-        circle(
-          ctx,
-          this.game.fx(neg * radius * Math.sin(val) + this.x),
-          this.game.fy(radius * Math.cos(val) + this.y),
-          this.game.fz(3),
-          { fillColour: this.game.colours.black }
-        );
+        if (!this.game.settings.simplerElectrons) {
+          circle(
+            ctx,
+            this.game.fx(neg * radius * Math.sin(val) + this.x),
+            this.game.fy(radius * Math.cos(val) + this.y),
+            this.game.fz(3),
+            { fillColour: this.game.colours.black }
+          );
+        }
       }
     });
   }
 
+  /*
+  @param { number } deltaTime
+  */
   update(deltaTime) {
     super.update(deltaTime);
     this.attackCooldown = Math.max(this.attackCooldown - deltaTime, 0);
 
     // Check for bullet collisions //
     this.game.gameObjects.filter(i => {
-      return i.type === "bullet" && i.team !== this.team;
+      // Filter only enemy bullets //
+      return i.class === "bullet" && i.team !== this.team;
     }).forEach(bullet => {
+      // If the two collide (overlap) //
       if (bullet.hitboxRadius + this.hitboxRadius >= distance(bullet.x, bullet.y, this.x, this.y)) {
         this.takeDamage(randint(1, 3));
+        // Delete bullet // TODO - pierce
         bullet.deleteMe = true;
       }
       // DIE //
       if (this.nucleons.length === 0) {
-        this.game.points += 10;
+        this.game.addScore(10);
         this.deleteMe = true;
       };
     })

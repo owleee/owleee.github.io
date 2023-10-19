@@ -7,7 +7,7 @@ import AI from "./ai.js";
 import Pickup from "./pickup.js";
 import Controller from "./controls.js";
 import { circle, randint, endPop } from "./functions.js";
-import Button from "./button.js";
+import { default as Button, TextButton } from "./button.js";
 
 // Get canvas and attributes //
 let canvas = document.getElementById("screen");
@@ -91,13 +91,32 @@ pauseButton.gamestate = ["RUNNING", "PAUSED"];
 pauseButton.boxStyle.radii = pauseButton.boxStyleHover.radii = 10;
 pauseButton.textStyle.size = pauseButton.textStyleHover.size = 35;
 
+let backButton = new Button(
+  game,
+  (x) => {
+    return 45;
+  },
+  (y) => {
+    return 45;
+  },
+  50,
+  50,
+  "<",
+  () => {
+    game.returnToMenu();
+  }
+);
+backButton.gamestate = ["OPTIONS"];
+backButton.boxStyle.radii = backButton.boxStyleHover.radii = 10;
+backButton.textStyle.size = backButton.textStyleHover.size = 35;
+
 let playButton = new Button(
   game,
   (x) => {
     return game.viewport.width / 2;
   },
   (y) => {
-    return game.viewport.height / 2;
+    return game.viewport.height / 2 - 50;
   },
   300,
   80,
@@ -114,17 +133,78 @@ let optionsButton = new Button(
     return game.viewport.width / 2;
   },
   (y) => {
-    return game.viewport.height / 2 + 100;
+    return game.viewport.height / 2 + 50;
   },
   300,
   80,
   "options",
   () => {
-    game.returnToMenu();
+    game.optionsMenu();
   }
 );
 optionsButton.gamestate = ["MENU"];
-optionsButton.greyed = true;
+
+let howToButton = new Button(
+  game,
+  (x) => {
+    return game.viewport.width / 2;
+  },
+  (y) => {
+    return game.viewport.height / 2 + 150;
+  },
+  300,
+  80,
+  "how_to",
+  () => {
+  }
+);
+howToButton.gamestate = ["MENU"];
+
+let creditsButton = new Button(
+  game,
+  (x) => {
+    return game.viewport.width / 2;
+  },
+  (y) => {
+    return game.viewport.height / 2 + 250;
+  },
+  300,
+  80,
+  "credits",
+  () => {
+  }
+);
+creditsButton.gamestate = ["MENU"];
+
+let nucleusSettingsButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 100 }, 600, 80, "", () => {
+    game.settings.simplerNucleus = !game.settings.simplerNucleus;
+  }
+)
+nucleusSettingsButton.gamestate = ["OPTIONS"]
+nucleusSettingsButton.updateText = (b) => {
+  b.label = `simpler_nucleus_${game.settings.simplerNucleus}`
+}
+
+let electronSettingsButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y }, 700, 80, "", () => {
+    game.settings.simplerElectrons = (game.settings.simplerElectrons + 1) % 3;
+  }
+)
+electronSettingsButton.gamestate = ["OPTIONS"]
+electronSettingsButton.updateText = (b) => {
+  b.label = `simpler_electrons_${game.settings.simplerElectrons}`
+}
+
+let languageButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 200 }, 600, 80, "", () => {
+    game.lang = game.lang === "es" ? "en" : "es";
+  }
+)
+languageButton.gamestate = ["OPTIONS"]
+languageButton.updateText = (b) => {
+  b.label = `lang_${game.lang}`
+}
 
 let testEnemy = new Atom(game, 1, 200, 200);
 testEnemy.addProton(100);

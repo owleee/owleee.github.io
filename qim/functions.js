@@ -67,12 +67,12 @@ export function XYrectangle(ctx, x, y, x2, y2, style) {
 }
 
 export function text(ctx, x, y, text, style) {
+  style = style || {};
   ctx.textBaseline = style.verticalAlign || "middle";
   ctx.textAlign = style.horizontalAlign || "center";
   ctx.letterSpacing = style.spacing || "0px";
-  ctx.font = `${style.style || "normal"} ${style.size || 0}px ${
-    style.font || "SpaceGrotesk"
-  }`;
+  ctx.font = `${style.style || "normal"} ${style.size || 0}px ${style.font || "SpaceGrotesk"
+    }`;
   ctx.lineWidth = style.lineWidth || 0;
   ctx.strokeStyle = style.lineColour || "#000000";
   ctx.fillStyle = style.fillColour || "#000000";

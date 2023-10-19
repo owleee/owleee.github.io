@@ -39,8 +39,8 @@ export default class Game {
 
     this.settings = {
       mouseMovement: false,
-      simplerNucleus: false, // make the nucleus a single circle
-      simplerElectrons: false // make the electron shell <something?> TODO - elaborate
+      simplerNucleus: true, // make the nucleus a single circle
+      simplerElectrons: 0 // make the electron shell <something?> TODO - elaborate
     };
 
     this.funFactCooldown = 1000;
@@ -90,12 +90,14 @@ export default class Game {
     for (let i = 0; i <= 250; i++) spawner.spawn();
   }
   togglePause() {
-    // Toggle whether the game is paused // TODO - Implement!
+    // Toggle whether the game is paused // DONE - Implement!
     if (this.gamestate === "PAUSED") {
       this.gamestate = "RUNNING";
       this.mouse.onButton = false;
     } else if (this.gamestate === "RUNNING") {
       this.gamestate = "PAUSED";
+    } else if (this.gamestate === "OPTIONS") {
+      this.returnToMenu();
     }
   }
   returnToMenu() {
@@ -112,6 +114,10 @@ export default class Game {
     if (this.score > this.highscore) {
       this.highscore = this.score;
     }
+  }
+
+  optionsMenu() {
+    this.gamestate = "OPTIONS"
   }
 
   update(deltaTime) {
@@ -159,7 +165,7 @@ export default class Game {
       this.mouse.onButton = false;
     }
 
-    if (this.gamestate === "MENU") {
+    if (["MENU", "OPTIONS"].includes(this.gamestate)) {
       this.viewport.zoom = 5;
       this.viewport.x =
         this.player.nucleusRadius -
@@ -172,9 +178,7 @@ export default class Game {
     }
 
     if (
-      this.gamestate === "PAUSED" ||
-      this.gamestate === "MENU" ||
-      this.gamestate === "GAMEOVER"
+      ["MENU", "OPTIONS", "GAMEOVER", "PAUSED"].includes(this.gamestate)
     )
       return;
     this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);
@@ -309,7 +313,7 @@ export default class Game {
       text(
         ctx,
         this.viewport.centre.x,
-        this.viewport.height / 4,
+        this.viewport.height / 4 + 10 * Math.sin(this.time / 1000),
         L("title", this.lang),
         {
           size: 200,
@@ -328,7 +332,7 @@ export default class Game {
         ctx,
         this.viewport.centre.x,
         this.viewport.height - 80 + highscoreWiggle,
-        "highscore:",
+        L("highscore", this.lang),
         {
           fillColour: this.colours.black,
           size: 30,
@@ -350,6 +354,8 @@ export default class Game {
           lineWidth: 1.5
         }
       );
+    } else if (this.gamestate === "OPTIONS") {
+      //text(ctx, this.viewport.center.x, this.viewport.center.y, ">w< options menu under construction :3", { fillColour: this.colours.black, size: 60 })
     }
     // Draw menu objects //
     this.menuObjects.forEach((object) => object.draw(ctx));
@@ -549,7 +555,7 @@ export default class Game {
 
   addScore(n) {
     this.score += n;
-    this.scoreWiggle += n;
+    this.scoreWiggle = Math.min(this.scoreWiggle + n, 30);
     if (this.scoreWiggle === 0) this.lastScoreAddedTime = this.time;
   }
 

@@ -8,8 +8,8 @@ export default class Bullet extends GameObject {
     this.team = team; // 0 = player, 1 = enemy
     this.hitboxRadius = 3;
   }
-  get type (){return "bullet";}
-  
+  get class() { return "bullet"; }
+
   draw(ctx) {
     circle(
       ctx,

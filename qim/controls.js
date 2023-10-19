@@ -4,7 +4,6 @@ export default class Controller {
   constructor(game, object) {
     this.game = game;
     this.object = object;
-    // Heavier atoms move more slowly //;
 
     this.forces = {
       up: 0,
