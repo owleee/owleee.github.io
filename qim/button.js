@@ -92,6 +92,7 @@ export default class Button {
       if (this.hovered) {
         if (this.clickable) {
           this.clickFunction();
+          this.game.save()
           this.clickable = false;
         }
       } else {

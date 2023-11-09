@@ -6,7 +6,7 @@ import Atom from "./atom.js";
 import AI from "./ai.js";
 import Pickup from "./pickup.js";
 import Controller from "./controls.js";
-import { circle, randint, endPop } from "./functions.js";
+import { circle, randint, endPop, loadCookie, saveCookie, validateSave, shuffleArray } from "./functions.js";
 import { default as Button, TextButton } from "./button.js";
 
 // Get canvas and attributes //
@@ -20,8 +20,20 @@ window.addEventListener("resize", (event) => {
   canvas.height = getComputedStyle(canvas).height.replace("px", "");
 });
 
+let cookie = loadCookie();
+
 // Initialise Game manager //
 let game = new Game();
+
+// Detect if the game is hosted on my website //
+// If not, show debug menu and mark as dev //
+game.isDev = !window.location.href.includes("github")
+if (game.isDev) game.debug.menu = true
+// Load highscore and settings from cookie // 
+game.highscore = cookie.highscore || 0;
+game.settings = cookie.settings || game.settings;
+game.debug = cookie.debug || game.debug;
+game.lang = cookie.lang || game.lang;
 
 // Detect mouse position //
 canvas.addEventListener("mousemove", (event) => {
@@ -53,7 +65,7 @@ let unpauseButton = new Button(
     game.togglePause();
   }
 );
-unpauseButton.gamestate = ["PAUSED"];
+unpauseButton.gamestate = ["PAUSED"]
 
 let mainMenuButton = new Button(
   game,
@@ -82,7 +94,7 @@ let pauseButton = new Button(
   },
   50,
   50,
-  "||",
+  "NT:▮▮",
   () => {
     game.togglePause();
   }
@@ -101,12 +113,12 @@ let backButton = new Button(
   },
   50,
   50,
-  "<",
+  "NT:<",
   () => {
     game.returnToMenu();
   }
 );
-backButton.gamestate = ["OPTIONS"];
+backButton.gamestate = ["OPTIONS", "CREDITS", "HOWTO"];
 backButton.boxStyle.radii = backButton.boxStyleHover.radii = 10;
 backButton.textStyle.size = backButton.textStyleHover.size = 35;
 
@@ -156,6 +168,7 @@ let howToButton = new Button(
   80,
   "how_to",
   () => {
+    game.howTo()
   }
 );
 howToButton.gamestate = ["MENU"];
@@ -172,6 +185,7 @@ let creditsButton = new Button(
   80,
   "credits",
   () => {
+    game.credits()
   }
 );
 creditsButton.gamestate = ["MENU"];
@@ -206,9 +220,40 @@ languageButton.updateText = (b) => {
   b.label = `lang_${game.lang}`
 }
 
+let movementButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 100 }, 700, 80, "", () => {
+    game.settings.mouseMovement = !game.settings.mouseMovement
+  }
+)
+movementButton.gamestate = ["OPTIONS"]
+movementButton.updateText = (b) => {
+  b.label = `movement_${game.settings.mouseMovement}`
+}
+
+let scrollButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 200 }, 700, 80, "", () => {
+    game.settings.scroll *= -1;
+  }
+)
+scrollButton.gamestate = ["OPTIONS"]
+scrollButton.updateText = (b) => {
+  b.label = `scroll_${game.settings.scroll}`
+}
+
+let symbolButton = new TextButton(
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 300 }, 700, 80, "", () => {
+    game.settings.readouts = !game.settings.readouts;
+  }
+)
+symbolButton.gamestate = ["OPTIONS"]
+symbolButton.updateText = (b) => {
+  b.label = `symbols_${game.settings.readouts}`
+}
+
 let testEnemy = new Atom(game, 1, 200, 200);
 testEnemy.addProton(100);
 testEnemy.addNeutron(100);
+shuffleArray(testEnemy.nucleons)
 new AI(game, testEnemy);
 
 // Attempt to fix bug with viewport movement - does not seem to work //
@@ -228,7 +273,6 @@ function gameLoop(timestamp) {
   }
 
   // Clear canvas of last frame //
-  ctx.clearRect(0, 0, game.viewport.width, game.viewport.height);
   controller.update();
   game.update(deltaTime);
 

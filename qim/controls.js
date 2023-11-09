@@ -80,16 +80,22 @@ export default class Controller {
       }
     });
 
+    // Listen for scroll events //
+    document.addEventListener("wheel", (event) => {
+      this.game.scroll = Math.max(this.game.scroll + event.deltaY * this.game.settings.scroll, 0);
+    })
+
     // Listen for mouse buttons being pressed //
     document.addEventListener("mousedown", (event) => {
       this.game.mouse.clicked = true;
+      if (!this.game.mouse.clickPos.x) this.game.mouse.clickPos = { x: this.game.mouse.x, y: this.game.mouse.y, scroll: this.game.scroll };
       if (this.game.mouse.onButton) return;
       switch (event.button) {
         case 0:
-          this.object.attackType = 1;
+          this.object.attack.primary = true;
           break;
         case 2:
-          this.object.attackType = 2;
+          this.object.attack.secondary = true;
           break;
         default:
           break;
@@ -97,9 +103,19 @@ export default class Controller {
     });
 
     document.addEventListener("mouseup", (event) => {
+      this.game.mouse.clickPos = {};
       this.game.mouse.clicked = false;
       if (this.game.mouse.onButton) return;
-      this.object.attackType = 0;
+      switch (event.button) {
+        case 0:
+          this.object.attack.primary = false;
+          break;
+        case 2:
+          this.object.attack.secondary = false;
+          break;
+        default:
+          break;
+      }
     });
 
     // Prevent right-clicking from opening the 'context' menu //
@@ -145,7 +161,7 @@ export default class Controller {
           x: this.forces.right - forces.left,
           y: this.forces.up - forces.down
         },
-        this.object.speed
+        this.game.debug.speed * this.object.speed
       );
     }
   }

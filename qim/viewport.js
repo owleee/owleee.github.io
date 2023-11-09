@@ -25,8 +25,8 @@ export default class Viewport {
     this.dy = target.y - this.y;
 
     // Smoothly move the camera towards the target
-    this.x += this.dx * smooth * deltaTime;
-    this.y += this.dy * smooth * deltaTime;
+    this.x += this.dx * smooth * Math.min(deltaTime);
+    this.y += this.dy * smooth * Math.min(deltaTime);
   }
   warp(target) {
     this.dx = 0;

@@ -6,7 +6,9 @@ import {
   isOffScreen,
   randint,
   endPop,
-  distance
+  distance,
+  vector, text,
+  TRvector
 } from "./functions.js";
 import { table } from "./table.js";
 import Bullet from "./bullet.js";
@@ -47,6 +49,8 @@ export default class Atom extends GameObject {
   constructor(game, team = 1, x = 0, y = 0) {
     super(game, x, y);
 
+    this.game.objects.atoms.push(this)
+
     this.team = team; // 0 = player, 1 = enemy
 
     this.neutrons = 0;
@@ -56,6 +60,10 @@ export default class Atom extends GameObject {
     this.nucleons = [];
 
     this.attackCooldown = 0;
+    this.attack = {
+      primary: false,
+      secondary: false
+    }
     this.times = { shooting: 0, moving: 0 };
 
     this.accuracy = 1;
@@ -122,23 +130,20 @@ export default class Atom extends GameObject {
     return 2.5 * Math.sqrt(this.isotope) + 2;
   }
 
-  takeDamage(damage = 1) {
+  takeDamage(damage = 1, damagePos = {}) {
+    if (this.team === 1) damage *= this.game.debug.damage;
     this.game.addScore(damage);
     for (let i = 0; i < damage; i++) {
       if (this.nucleons.length <= 0) return;
       let damaged = this.nucleons[this.nucleons.length - 1];
-      if (damaged === "neutron") {
-        this.addNeutron(-1)
-      } else if (damaged === "proton") {
-        this.addProton(-1)
-      }
       for (let i = 0; i < randint(5, 10); i++) {
-        let p = new Particle(this.game, this.x, this.y, this.game.colours.black, 3);
-        p.velocity = { x: this.velocity.x + randint(10, -10) / 10, y: this.velocity.y + randint(10, -10) / 10 };
-        p.tween.push({ var: "scale", target: 0, speed: -0.001, })
+        let p = new Particle(this.game, damagePos.x || this.x, damagePos.y || this.y, this.game.colours.black, 3);
+        p.velocity = TRvector(Math.random() * 360, Math.random() * 2)
+        p.tween.push({ var: "scale", target: 0, speed: -0.002, })
       }
-      let drop = new Pickup(this.game, this.x, this.y, damaged)
-      drop.velocity = { x: this.velocity.x + randint(10, -10) / 10, y: this.velocity.y + randint(10, -10) / 10 }
+      this.eject(damaged, TRvector(Math.random() * 360, Math.random() * 2));
+      //let drop = new Pickup(this.game, this.x, this.y, damaged)
+      //drop.velocity = { x: this.velocity.x + randint(10, -10) / 10, y: this.velocity.y + randint(10, -10) / 10 }
     }
   }
 
@@ -148,8 +153,9 @@ export default class Atom extends GameObject {
     // Theoretically improve performance //
     if (isOffScreen(this, this.game.viewport)) return;
 
-    // Draw nucleus
+    // Draw nucleus //
     if (this.game.settings.simplerNucleus) {
+      // Simpler nucleus //
       circle(
         ctx,
         this.game.fx(this.x),
@@ -162,6 +168,7 @@ export default class Atom extends GameObject {
         }
       );
     } else {
+      // Full nucleus //
       this.nucleons.forEach((v, i) => {
         let n = 2.5;
         let pos = getNucleonPosition(i);
@@ -171,9 +178,9 @@ export default class Atom extends GameObject {
           fillColour: this.game.colours.black
         });
       });
-      this.nucleons.forEach((v, i) => {
+      [...this.nucleons].reverse().forEach((v, i) => {
         let n = 2.5;
-        let pos = getNucleonPosition(i);
+        let pos = getNucleonPosition(this.isotope - i - 1);
         let x = n * pos.x + this.x;
         let y = n * pos.y + this.y;
         circle(ctx, this.game.fx(x), this.game.fy(y), this.game.fz(3), {
@@ -232,6 +239,19 @@ export default class Atom extends GameObject {
         }
       }
     });
+
+    if (this.game.settings.readouts) {
+      text(ctx, this.game.fx(this.x), this.game.fy(this.y), `${this.symbol}-${this.isotope}`, {
+        size: this.game.fz(Math.max(this.nucleusRadius, 10)),
+        fillColour: this.game.colours.black,
+        lineWidth: this.game.fz(4),
+        lineColour: this.game.colours.black,
+      })
+      text(ctx, this.game.fx(this.x), this.game.fy(this.y), `${this.symbol}-${this.isotope}`, {
+        size: this.game.fz(Math.max(this.nucleusRadius, 10)),
+        fillColour: this.game.colours.white,
+      })
+    }
   }
 
   /*
@@ -240,15 +260,16 @@ export default class Atom extends GameObject {
   update(deltaTime) {
     super.update(deltaTime);
     this.attackCooldown = Math.max(this.attackCooldown - deltaTime, 0);
+    this.specialCooldown = Math.max(this.specialCooldown - deltaTime, 0);
 
     // Check for bullet collisions //
-    this.game.gameObjects.filter(i => {
+    this.game.objects.bullets.filter(i => {
       // Filter only enemy bullets //
-      return i.class === "bullet" && i.team !== this.team;
+      return i.team !== this.team;
     }).forEach(bullet => {
       // If the two collide (overlap) //
       if (bullet.hitboxRadius + this.hitboxRadius >= distance(bullet.x, bullet.y, this.x, this.y)) {
-        this.takeDamage(randint(1, 3));
+        this.takeDamage(randint(1, 3), { x: bullet.x, y: bullet.y });
         // Delete bullet // TODO - pierce
         bullet.deleteMe = true;
       }
@@ -259,57 +280,115 @@ export default class Atom extends GameObject {
       };
     })
 
+    this.game.objects.atoms.forEach(atom => {
+      if (atom === this) return
+      let d = distance(atom.x, atom.y, this.x, this.y)
+      if (d < this.hitboxRadius + atom.hitboxRadius) {
+        this.x = ((this.x - atom.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.x
+        this.y = ((this.y - atom.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.y
+
+        atom.x = ((atom.x - this.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.x
+        atom.y = ((atom.y - this.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.y
+      }
+    })
+
     // Handle attacking //
-    switch (this.attackType) {
-      case 1: // Primary
-        // If attack is on cooldown, don't attack //
-        if (this.attackCooldown > 0) return;
-        // Otherwise, reset the cooldown and perform the attack //
-        this.attackCooldown = 1000 / this.protons ** 0.5;
+    if (this.attack.primary) { // Primary
+      // If attack is on cooldown, don't attack //
+      if (this.attackCooldown > 0) return;
+      // Otherwise, reset the cooldown and perform the attack //
+      this.attackCooldown = 1000 / this.protons ** 0.5;
 
-        // Spawn a bullet // TODO - make bullets spawn around the atom not at center // partly implemented
-        let spawnPos = normalise(
-          {
-            x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
-            y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
-          },
-          this.hitboxRadius
-        );
-        let bullet = new Bullet(
-          this.game,
-          this.team,
-          this.x + spawnPos.x,
-          this.y + spawnPos.y
-        );
-        // Apply velocity such that the bullet shoots towards the mouse //
-        bullet.velocity = normalise({
-          x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
-          y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
-        });
+      this.shoot()
+    }
+    if (this.attack.secondary) { // Secondary/special
+      // If attack is on cooldown, don't attack //
+      if (this.specialCooldown > 0) return;
+      // Otherwise, reset the cooldown and perform the attack //
+      this.specialCooldown = 1000;
 
-        // Add the atom's own velocity //
-        bullet.velocity = {
-          x:
-            bullet.velocity.x +
-            this.velocity.x +
-            randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
-          y:
-            bullet.velocity.y +
-            this.velocity.y +
-            randint(-this.accuracy * 100, this.accuracy * 100) / 1000
-        };
+      this.special()
+    }
+  }
+
+  shoot(type = "electron") {
+    // Spawn a bullet // TODO - make bullets spawn around the atom not at center // partly implemented
+    let spawnPos = normalise(
+      {
+        x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
+        y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
+      },
+      this.hitboxRadius
+    );
+    let bullet = new Bullet(
+      this.game,
+      this.team,
+      this.x + spawnPos.x,
+      this.y + spawnPos.y
+    );
+    bullet.type = type;
+    // Apply velocity such that the bullet shoots towards the mouse //
+    bullet.velocity = normalise({
+      x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
+      y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
+    }, bullet.type === "alpha" ? 0.25 : 1);
+
+    // Add the atom's own velocity //
+    bullet.velocity = {
+      x:
+        bullet.velocity.x +
+        this.velocity.x +
+        randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
+      y:
+        bullet.velocity.y +
+        this.velocity.y +
+        randint(-this.accuracy * 100, this.accuracy * 100) / 1000
+    };
+  }
+
+  eject(type, direction, amount = 1) {
+    if (type == "proton") {
+      this.addProton(-amount)
+    } else if (type == "neutron") {
+      this.addNeutron(-amount)
+    }
+    for (let i = 0; i < amount; i++) {
+      let p = new Pickup(this.game, this.x, this.y, type);
+      p.team = this.team;
+      p.velocity = direction
+      // Add the atom's own velocity //
+      /*
+      p.velocity = {
+        x:
+          p.velocity.x +
+          this.velocity.x //+randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
+        , y:
+          p.velocity.y +
+          this.velocity.y //+ randint(-this.accuracy * 100, this.accuracy * 100) / 1000
+      };*/
+    }
+  }
+
+  special() {
+    console.log(this.decayMode)
+    switch (this.decayMode) {
+      case "p":
+      case "2p":
+      case "3p":
+        this.eject("proton", vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y)), this.decayMode === "3p" ? 3 : this.decayMode === "2p" ? 2 : 1)
         break;
-      case 2: // Secondary (special)
-        console.log("special attack yippee!!!");
+      case "n":
+      case "2n":
+        this.eject("neutron", vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y)), this.decayMode === "2n" ? 2 : 1)
         break;
+      case "A":
+        this.shoot("alpha");
+        this.addProton(-2);
+        this.addNeutron(-2);
       default:
         break;
     }
   }
-
-  attack() { }
-
-  special() { }
 
   get electrons() {
     return this.protons; // There is no ionising mechanic, so electrons will always equal protons

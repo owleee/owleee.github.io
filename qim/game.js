@@ -1,18 +1,11 @@
-// Import viewport object //
 import Viewport from "./viewport.js";
-import {
-  XYrectangle,
-  rectangle,
-  text,
-  round,
-  arraySum
-} from "./functions.js";
+import { XYrectangle, rectangle, text, round, arraySum, loadCookie, saveCookie } from "./functions.js";
 import { category, categoryColours, L, funFacts } from "./data.js";
 import { randint, randItem, elementSymbol } from "./functions.js";
 import { default as Pickup, PickupSpawner } from "./pickup.js";
 import { FunFactText } from "./button.js";
 
-// Globally indicate state of the game // TODO - add more?
+const MENU_STATES = ["MENU", "OPTIONS", "HOWTO", "CREDITS"]
 
 // Game Manager class
 export default class Game {
@@ -20,6 +13,11 @@ export default class Game {
     this.viewport = new Viewport(this);
     this.gamestate = "MENU";
     this.gameObjects = [];
+    this.objects = {
+      atoms: [],
+      food: [],
+      bullets: []
+    }
     this.menuObjects = [];
     this.time = 0;
     this.tick = 0;
@@ -36,11 +34,14 @@ export default class Game {
       moving: 0,
       shooting: 0
     };
+    this.scroll = 0
 
     this.settings = {
       mouseMovement: false,
-      simplerNucleus: true, // make the nucleus a single circle
-      simplerElectrons: 0 // make the electron shell <something?> TODO - elaborate
+      simplerNucleus: false, // make the nucleus a single circle
+      simplerElectrons: 0, // make the electron shell <something?> TODO - elaborate
+      scroll: 1,
+      readouts: true
     };
 
     this.funFactCooldown = 1000;
@@ -48,12 +49,15 @@ export default class Game {
     this.lang = "en"; // supported: en, es
     this.debug = {
       menu: false,
-      foodSpawn: true
+      foodSpawn: true,
+      damage: 1,
+      speed: 1,
     };
 
     this.mouse = {
       x: this.viewport.centre.x,
-      y: this.viewport.height / 2
+      y: this.viewport.centre.y,
+      clickPos: {}
     };
 
     // Whether the movement is key-based or towards the cursor //
@@ -77,6 +81,12 @@ export default class Game {
     };
   }
 
+  only(c) {
+    return this.gameObjects.filter(i => {
+      return i.class === c
+    })
+  }
+
   start() {
     this.gamestate = "RUNNING";
     this.player.protons = 0;
@@ -88,6 +98,7 @@ export default class Game {
     let spawner = new PickupSpawner(this);
     // Spawn 250 pickups at the start //
     for (let i = 0; i <= 250; i++) spawner.spawn();
+    this.save()
   }
   togglePause() {
     // Toggle whether the game is paused // DONE - Implement!
@@ -99,6 +110,7 @@ export default class Game {
     } else if (this.gamestate === "OPTIONS") {
       this.returnToMenu();
     }
+    this.save()
   }
   returnToMenu() {
     this.gamestate = "MENU";
@@ -108,16 +120,26 @@ export default class Game {
     this.menuObjects = this.menuObjects.filter(
       (i) => i.constructor.name !== "FunFactText"
     );
+    this.scroll = 0;
     this.funFactCooldown = randint(10000, 20000);
     this.player.x = this.player.y = 0;
     this.addObject(this.player);
     if (this.score > this.highscore) {
       this.highscore = this.score;
     }
+    this.save()
   }
 
   optionsMenu() {
     this.gamestate = "OPTIONS"
+  }
+
+  howTo() {
+    this.gamestate = "HOWTO"
+  }
+
+  credits() {
+    this.gamestate = "CREDITS"
   }
 
   update(deltaTime) {
@@ -156,6 +178,13 @@ export default class Game {
       }
     }
 
+    // TODO - drag scrolling
+    if (["HOWTO", "CREDITS"].includes(this.gamestate)) {
+      if (this.mouse.clicked) {
+        this.scroll = Math.max(this.mouse.clickPos.y - this.mouse.y + this.mouse.clickPos.scroll, 0)
+      }
+    }
+
     this.menuObjects.forEach((object) => object.update(deltaTime));
     for (let i in this.menuObjects) {
       if (this.menuObjects[i].hovered) {
@@ -165,7 +194,7 @@ export default class Game {
       this.mouse.onButton = false;
     }
 
-    if (["MENU", "OPTIONS"].includes(this.gamestate)) {
+    if (MENU_STATES.includes(this.gamestate)) {
       this.viewport.zoom = 5;
       this.viewport.x =
         this.player.nucleusRadius -
@@ -178,7 +207,7 @@ export default class Game {
     }
 
     if (
-      ["MENU", "OPTIONS", "GAMEOVER", "PAUSED"].includes(this.gamestate)
+      this.gamestate !== "RUNNING"
     )
       return;
     this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);
@@ -192,9 +221,14 @@ export default class Game {
 
     // Iterate over all objects and check whether they have been marked for deletion //
     this.gameObjects = this.gameObjects.filter((object) => !object.deleteMe);
+    this.objects.atoms = this.objects.atoms.filter((object) => !object.deleteMe);
+    this.objects.food = this.objects.food.filter((object) => !object.deleteMe);
+    this.objects.bullets = this.objects.bullets.filter((object) => !object.deleteMe);
     this.menuObjects = this.menuObjects.filter((object) => !object.deleteMe);
   }
   draw(ctx) {
+    rectangle(ctx, 0, 0, this.viewport.width, this.viewport.height, { fillColour: this.colours.white });
+
     // Draw borders //
     if (this.viewport.x + this.viewport.width / 2 > this.width / 2) {
       XYrectangle(
@@ -243,6 +277,10 @@ export default class Game {
 
     // Iterate over all objects and call their draw method //
     this.gameObjects.forEach((object) => object.draw(ctx));
+
+    if (["HOWTO", "OPTIONS", "CREDITS"].includes(this.gamestate)) rectangle(ctx, 0, 0, this.viewport.width, this.viewport.height, {
+      fillColour: "rgba(255,255,255,0.5)"
+    });
 
     // Draw GUI //
 
@@ -324,6 +362,20 @@ export default class Game {
           style: "bold"
         }
       );
+      if (this.isDev) {
+        text(
+          ctx,
+          this.viewport.centre.x,
+          this.viewport.height / 4 + 100,
+          "(dev build)",
+          {
+            size: 50,
+            fillColour: this.colours.black,
+            maxWidth: this.viewport.width,
+          }
+        )
+      }
+
       let highscoreWiggle =
         this.highscore === this.score && this.score !== 0
           ? 10 * Math.sin(this.time / 250)
@@ -356,6 +408,36 @@ export default class Game {
       );
     } else if (this.gamestate === "OPTIONS") {
       //text(ctx, this.viewport.center.x, this.viewport.center.y, ">w< options menu under construction :3", { fillColour: this.colours.black, size: 60 })
+    } else if (this.gamestate === "HOWTO") {
+      text(ctx, this.viewport.centre.x, this.viewport.height / 4 + 10 * Math.sin(this.time / 1000) - 100 - this.scroll, L("how_to", this.lang).toUpperCase(),
+        {
+          size: 100,
+          fillColour: this.colours.black,
+          maxWidth: this.viewport.width,
+          lineColour: this.colours.white,
+          lineWidth: 5,
+          style: "bold"
+        }
+      );
+      let bodyTextStyle = { fillColour: this.colours.black, size: 30, maxWidth: this.viewport.width }
+      text(ctx, this.viewport.center.x, 290 - this.scroll, "controls", { fillColour: this.colours.black, size: 60, style: "bold" })
+      text(ctx, this.viewport.center.x, 340 - this.scroll, "The player can move using WASD or by moving the mouse (configurable in settings)", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 380 - this.scroll, "Aim using the mouse pointer and shoot using left-click, and use a special attack with right-click.", bodyTextStyle)
+
+      text(ctx, this.viewport.center.x, 490 - this.scroll, "gameplay", { fillColour: this.colours.black, size: 60, style: "bold" })
+      text(ctx, this.viewport.center.x, 540 - this.scroll, "Move around the map, collecting nucleons to grow your atom. Heavier isotopes move slower.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 580 - this.scroll, "Shooting enemies removes nucleons which you can pick up. Destroy the entire nucleus to defeat an enemy.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 620 - this.scroll, "Different isotopes have different decay modes, which can be used as a special attack:", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 660 - this.scroll, "The \"Electron Capture\" special absorbs enemy attacks for a short amount of time, then turns a proton into a neutron.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 700 - this.scroll, "The \"Beta-plus\" special turns a proton into a neutron and releases a powerful positron and a neutrino.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 740 - this.scroll, "The \"Beta-minus\" special turns a neutron into a proton and releases an electron and a powerful antineutrino blast.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 780 - this.scroll, "The \"Alpha Decay\" special releases an explosive alpha particle, dealing large damage to nearby enemies.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 820 - this.scroll, "The \"Proton Emission\" and \"Neutron Emission\" specials emit protons/neutrons which cannot be picked back up", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 860 - this.scroll, "The \"Spontaneous Fission\" special splits the atom and creates an ally that will distract and attack enemies.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 900 - this.scroll, "Stable isotopes have no special attack, but take less damage and shoot more accurately", bodyTextStyle)
+
+    } else if (this.gamestate === "CREDITS") {
+
     }
     // Draw menu objects //
     this.menuObjects.forEach((object) => object.draw(ctx));
@@ -507,6 +589,7 @@ export default class Game {
         round(this.scoreWiggle, 4),
         debugStyle
       );
+      text(ctx, 10, 210, this.scroll, debugStyle);
     }
   }
 
@@ -539,6 +622,15 @@ export default class Game {
         }
         break;
 
+      case "speed":
+        this.debug.speed = c[1]
+        console.log(`speed set to ${this.debug.speed}x`)
+        break;
+      case "damage":
+      case "dmg":
+        this.debug.damage = c[1]
+        console.log(`damage set to ${this.debug.damage}x`)
+        break;
       case "":
         this.debug.menu = !this.debug.menu;
         console.log(`debug menu ${this.debug.menu ? "shown" : "hidden"}`);
@@ -546,6 +638,17 @@ export default class Game {
       default:
         break;
     }
+    this.save();
+  }
+
+  save() {
+    let cookie = {
+      lang: this.lang,
+      settings: this.settings,
+      debug: this.debug,
+      highscore: this.highscore
+    }
+    saveCookie(cookie);
   }
 
   addObject(obj) {

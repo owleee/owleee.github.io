@@ -100,8 +100,13 @@ export function distance(x1, y1, x2, y2) {
 }
 
 // use nothing but addition and subtraction to approximate distance //
-export function approxDist(x1, y1, x2, y2) {
+export function _approxDist(x1, y1, x2, y2) {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+}
+
+const ROOT_TWO_OVER_TWO = Math.sqrt(2) / 2
+export function approxDist(x1, y1, x2, y2) {
+  return Math.max(ROOT_TWO_OVER_TWO * (Math.abs(x1 - x2) + Math.abs(y1 - y2)), Math.abs(x1 - x2), Math.abs(y1 - y2))
 }
 
 export function shuffleArray(array) {
@@ -120,12 +125,11 @@ export function normalise(vector, scale = 1) {
   if (length === 0) return vector;
 
   // Normalize the vector by dividing each component by its length
-  const normalizedVector = {
+
+  return {
     x: scale * (vector.x / length),
     y: scale * (vector.y / length)
   };
-
-  return normalizedVector;
 }
 
 export function isOffScreen(object, screen) {
@@ -200,4 +204,48 @@ export function elementSymbol(ctx, x, y, element, colour) {
     verticalAlign: "top",
     horizontalAlign: "right"
   });
+}
+
+export function saveCookie(cookieObj, name = "atom-data") {
+  try {
+    //console.log(`Saving cookie ${name}`)
+    document.cookie = `${name}=${JSON.stringify(cookieObj)}`
+  }
+  catch (e) {
+    console.error(`Error saving cookie ${name}: ${e.message}`)
+  }
+}
+
+export function loadCookie(name = "atom-data") {
+  try {
+    console.log(`Loading cookie ${name}`)
+    return JSON.parse(document.cookie.split(";").filter(i => { return i.split("=")[0] === name })[0].split("=")[1]);
+  }
+  catch (e) {
+    console.error(`Error parsing cookie ${name}: ${e.message}`)
+    return {}
+  }
+}
+
+export function validateSave(data) {
+  return {
+    lang: ["es", "en"].includes(data.lang) ? data.lang : "en", // default to english
+    settings: {
+      mouseMovement: true
+    },
+    debug: data.debug,
+    highscore: data.highscore
+  }
+}
+
+export function vector(x, y) {
+  return { x: x, y: y }
+}
+
+export function TRvector(theta, radius, angleUnit = "RAD") {
+  if (angleUnit === "DEG") theta /= 180 / Math.PI
+  return {
+    x: radius * Math.sin(theta),
+    y: radius * Math.cos(theta)
+  }
 }

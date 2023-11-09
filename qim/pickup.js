@@ -1,10 +1,15 @@
 import GameObject from "./object.js";
-import { circle, distance, randint, isOffScreen } from "./functions.js";
+import { circle, distance, randint, isOffScreen, text } from "./functions.js";
 
 export default class Pickup extends GameObject {
   constructor(game, x = 0, y = 0, type) {
     super(game, x, y);
+    this.game.objects.food.push(this)
+
     this.type = type;
+    // Team determines which team the pickup CANNOT be collected by //
+    // Null value = either //
+    this.team;
     this.hitboxRadius = randint(25, 35) / 10 + 1;
     this.tween = [{ var: "scale", target: 1, speed: 0.005 }];
     this.friction = 0.995;
@@ -23,38 +28,46 @@ export default class Pickup extends GameObject {
 
       this.game.fz(this.scale * this.hitboxRadius),
       {
-        fillColour: colour,
-        lineColour: this.game.colours.black,
+        fillColour: colour + (this.team === 0 ? "55" : ""),
+        lineColour: this.game.colours.black + (this.team === 0 ? "55" : ""),
         lineWidth: this.game.fz(this.scale * 2)
       }
     );
+    /*text(ctx, this.game.fx(this.x), this.game.fy(this.y), this.team, {
+      size: 20 * this.scale,
+      fillColour: "black"
+    })*/
+
   }
 
   update(deltaTime) {
     //if (isOffScreen(this, this.game.viewport)) return;
     super.update(deltaTime);
-    if (
-      distance(this.x, this.y, this.game.player.x, this.game.player.y) <=
-      this.game.player.hitboxRadius + this.hitboxRadius
-    ) {
-      if (this.type === "neutron") this.game.player.addNeutron();
-      else if (this.type === "proton") this.game.player.addProton();
-      if (this.type === "quark") {
-        this.game.addScore(randint(1, 5));
-      } else {
-        // 5 points if the isotope is stable
-        // 2 points if the isotope has a known decay mode
-        // 1 point otherwawise
-        let score =
-          1 +
-          3 * (this.game.player.decayMode === "IS") +
-          (this.game.player.decayMode !== "unknown");
+    this.game.objects.atoms.forEach((atom) => {
+      if (
+        distance(this.x, this.y, atom.x, atom.y) <=
+        atom.hitboxRadius + this.hitboxRadius && this.team !== atom.team
+      ) {
+        if (this.type === "neutron") atom.addNeutron();
+        else if (this.type === "proton") atom.addProton();
+        this.deleteMe = true;
+        if (atom.team === 1) return
+        // Player only //
+        if (this.type === "quark") {
+          this.game.addScore(randint(1, 5));
+        } else {
+          // 5 points if the isotope is stable
+          // 2 points if the isotope has a known decay mode
+          // 1 point otherwawise
+          let score =
+            1 +
+            3 * (this.game.player.decayMode === "IS") +
+            (this.game.player.decayMode !== "unknown");
 
-        this.game.addScore(score);
+          this.game.addScore(score);
+        }
       }
-
-      this.deleteMe = true;
-    }
+    })
   }
 }
 
@@ -85,11 +98,19 @@ export class PickupSpawner extends GameObject {
       this.game.player.hitboxRadius + 10
     )
       return;
+
+    let type = "quark";
+
+    if (randint(0, 1) == 1) {
+      type = "proton"
+      if (randint(1, 10) >= 5) type = "neutron"
+    }
+
     let p = new Pickup(
       this.game,
       x,
       y,
-      ["proton", "neutron", "quark"][randint(0, 2)]
+      type
     );
     p.scale = 0;
   }
