@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Shake</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+
+    <script>
+        // Get the canvas and context
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Function to draw a rectangle
+        function drawRectangle(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+        }
+
+        // Function to shake the screen
+        function screenShake(intensity, duration) {
+            const initialX = canvas.width / 2;
+            const initialY = canvas.height / 2;
+
+            let startTime = null;
+
+            function shake(currentTime) {
+                if (!startTime) {
+                    startTime = currentTime;
+                }
+
+                const elapsedTime = currentTime - startTime;
+
+                if (elapsedTime < duration) {
+                    const offsetX = Math.random() * intensity - intensity / 2;
+                    const offsetY = Math.random() * intensity - intensity / 2;
+
+                    clearCanvas();
+                    drawRectangle(initialX + offsetX, initialY + offsetY, 50, 50, 'blue');
+
+                    requestAnimationFrame(shake);
+                } else {
+                    clearCanvas();
+                    drawRectangle(initialX, initialY, 50, 50, 'blue');
+                }
+            }
+
+            requestAnimationFrame(shake);
+        }
+
+        // Initial drawing
+        drawRectangle(canvas.width / 2, canvas.height / 2, 50, 50, 'blue');
+
+        // Trigger screen shake on button click
+        document.addEventListener('click', function () {
+            screenShake(30, 500);
+        });
+    </script>
+</body>
+
+</html>

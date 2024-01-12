@@ -8,12 +8,13 @@ import {
   endPop,
   distance,
   vector, text,
-  TRvector
+  TRvector, round, randItem, shuffleArray
 } from "./functions.js";
 import { table } from "./table.js";
-import Bullet from "./bullet.js";
+import { default as Bullet, Shockwave } from "./bullet.js";
 import Pickup from "./pickup.js";
 import Particle from "./particle.js";
+import AI from "./ai.js";
 
 // Define some mathematical constants //
 const TAU = Math.PI * 2;
@@ -59,12 +60,17 @@ export default class Atom extends GameObject {
 
     this.nucleons = [];
 
+    this.trauma = 10;
+    this.nucleusOffset = { x: 0, y: 0 }
+
     this.attackCooldown = 0;
     this.attack = {
       primary: false,
       secondary: false
     }
     this.times = { shooting: 0, moving: 0 };
+
+    this.shield = "NUH UH";
 
     this.accuracy = 1;
 
@@ -112,6 +118,19 @@ export default class Atom extends GameObject {
     this.getDecayMode(); // Update the atom's decay mode
   }
 
+  setNucleons(protons, neutrons) {
+    this.nucleons.length = 0 // Reset the nucleus
+
+    this.protons = protons;
+    for (let i = 0; i < protons; i++) this.nucleons.push(P); // Add the protons to the nucleon array
+
+    this.neutrons = neutrons;
+    for (let i = 0; i < neutrons; i++) this.nucleons.push(N); // Add the protons to the nucleon array
+    this.getDecayMode(); // Update the atom's decay mode
+    shuffleArray(this.nucleons);
+  }
+
+
   getDecayMode() {
     // Get the isotope's decay mode //
     let isotopes = table[this.protons]; // Get only isotopes of this element
@@ -121,6 +140,9 @@ export default class Atom extends GameObject {
     });
     if (isotopes.length === 0) {
       this.decayMode = "unknown"; // If not found, return "unknown"
+
+      if (1.5 * this.protons > this.neutrons) this.eject("proton", TRvector(randint(0, 360), randint(5, 15) / 10))
+      if (1.5 * this.protons < this.neutrons) this.eject("neutron", TRvector(randint(0, 360), randint(5, 15) / 10))
     } else {
       this.decayMode = isotopes[0].decay; // Otherwise return the decay mode
     }
@@ -132,15 +154,16 @@ export default class Atom extends GameObject {
 
   takeDamage(damage = 1, damagePos = {}) {
     if (this.team === 1) damage *= this.game.debug.damage;
+    this.game.viewport.trauma += damage * 2
     this.game.addScore(damage);
+    for (let i = 0; i < randint(5, 10); i++) {
+      let p = new Particle(this.game, damagePos.x || this.x, damagePos.y || this.y, this.game.colours.black, 3);
+      p.velocity = TRvector(Math.random() * 360, Math.random() * 2)
+      p.tween.push({ var: "scale", target: 0, speed: -0.002, })
+    }
     for (let i = 0; i < damage; i++) {
       if (this.nucleons.length <= 0) return;
       let damaged = this.nucleons[this.nucleons.length - 1];
-      for (let i = 0; i < randint(5, 10); i++) {
-        let p = new Particle(this.game, damagePos.x || this.x, damagePos.y || this.y, this.game.colours.black, 3);
-        p.velocity = TRvector(Math.random() * 360, Math.random() * 2)
-        p.tween.push({ var: "scale", target: 0, speed: -0.002, })
-      }
       this.eject(damaged, TRvector(Math.random() * 360, Math.random() * 2));
       //let drop = new Pickup(this.game, this.x, this.y, damaged)
       //drop.velocity = { x: this.velocity.x + randint(10, -10) / 10, y: this.velocity.y + randint(10, -10) / 10 }
@@ -153,13 +176,16 @@ export default class Atom extends GameObject {
     // Theoretically improve performance //
     if (isOffScreen(this, this.game.viewport)) return;
 
+    this.nucleusOffset.x = Math.random() * this.trauma - this.trauma / 2;
+    this.nucleusOffset.y = Math.random() * this.trauma - this.trauma / 2;
+
     // Draw nucleus //
     if (this.game.settings.simplerNucleus) {
       // Simpler nucleus //
       circle(
         ctx,
-        this.game.fx(this.x),
-        this.game.fy(this.y),
+        this.game.fx(this.x + this.nucleusOffset.x),
+        this.game.fy(this.y + this.nucleusOffset.y),
         this.game.fz(this.nucleusRadius),
         {
           fillColour: this.game.colours.red,
@@ -172,8 +198,8 @@ export default class Atom extends GameObject {
       this.nucleons.forEach((v, i) => {
         let n = 2.5;
         let pos = getNucleonPosition(i);
-        let x = n * pos.x + this.x;
-        let y = n * pos.y + this.y;
+        let x = n * pos.x + this.x + this.nucleusOffset.x;
+        let y = n * pos.y + this.y + this.nucleusOffset.y;
         circle(ctx, this.game.fx(x), this.game.fy(y), this.game.fz(5), {
           fillColour: this.game.colours.black
         });
@@ -181,8 +207,8 @@ export default class Atom extends GameObject {
       [...this.nucleons].reverse().forEach((v, i) => {
         let n = 2.5;
         let pos = getNucleonPosition(this.isotope - i - 1);
-        let x = n * pos.x + this.x;
-        let y = n * pos.y + this.y;
+        let x = n * pos.x + this.x + this.nucleusOffset.x;
+        let y = n * pos.y + this.y + this.nucleusOffset.y;
         circle(ctx, this.game.fx(x), this.game.fy(y), this.game.fz(3), {
           fillColour: v === N ? this.game.colours.blue : this.game.colours.red
         });
@@ -205,6 +231,11 @@ export default class Atom extends GameObject {
     s.forEach((v, i) => {
       // Calculate the radius of the shell and draw it //
       let radius = 15 * ((this.game.settings.simplerElectrons === 2 ? l : i) + 1) + this.nucleusRadius;
+      if (i === 0 && this.shield !== "NUH UH") {
+        let c = Math.min(round(this.shield / 10), 85).toString(16)
+        if (c.length === 1) c = "0" + c
+        circle(ctx, this.game.fx(this.x), this.game.fy(this.y), this.game.fz(radius), { fillColour: this.game.colours.blue + c })
+      }
       circle(
         ctx,
         this.game.fx(this.x),
@@ -239,6 +270,17 @@ export default class Atom extends GameObject {
         }
       }
     });
+    /*
+    text(ctx, this.game.fx(this.x), this.game.fy(this.y), this.decayMode, {
+      size: this.game.fz(Math.max(this.nucleusRadius, 10)),
+      fillColour: this.game.colours.white,
+    })
+
+    text(ctx, this.game.fx(this.x), this.game.fy(this.y + 20), `${this.protons} ${this.neutrons}`, {
+      size: 20,
+      fillColour: this.game.colours.white,
+      lineColour: this.game.colours.black
+    })*/
 
     if (this.game.settings.readouts) {
       text(ctx, this.game.fx(this.x), this.game.fy(this.y), `${this.symbol}-${this.isotope}`, {
@@ -251,6 +293,7 @@ export default class Atom extends GameObject {
         size: this.game.fz(Math.max(this.nucleusRadius, 10)),
         fillColour: this.game.colours.white,
       })
+
     }
   }
 
@@ -261,6 +304,15 @@ export default class Atom extends GameObject {
     super.update(deltaTime);
     this.attackCooldown = Math.max(this.attackCooldown - deltaTime, 0);
     this.specialCooldown = Math.max(this.specialCooldown - deltaTime, 0);
+    this.trauma = Math.max(0, this.trauma - 0.01 * deltaTime);
+
+    if (this.shield !== "NUH UH") this.shield = Math.max(this.shield - deltaTime, 0);
+
+    if (this.shield === 0) {
+      this.addProton(-1)
+      this.addNeutron(1)
+      this.shield = "NUH UH"
+    }
 
     // Check for bullet collisions //
     this.game.objects.bullets.filter(i => {
@@ -269,7 +321,7 @@ export default class Atom extends GameObject {
     }).forEach(bullet => {
       // If the two collide (overlap) //
       if (bullet.hitboxRadius + this.hitboxRadius >= distance(bullet.x, bullet.y, this.x, this.y)) {
-        this.takeDamage(randint(1, 3), { x: bullet.x, y: bullet.y });
+        this.takeDamage(this.shield === "NUH UH" ? randint(1, 3) : 0, { x: bullet.x, y: bullet.y });
         // Delete bullet // TODO - pierce
         bullet.deleteMe = true;
       }
@@ -280,17 +332,20 @@ export default class Atom extends GameObject {
       };
     })
 
-    this.game.objects.atoms.forEach(atom => {
-      if (atom === this) return
-      let d = distance(atom.x, atom.y, this.x, this.y)
-      if (d < this.hitboxRadius + atom.hitboxRadius) {
-        this.x = ((this.x - atom.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.x
-        this.y = ((this.y - atom.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.y
+    // Iterate over every other atom and calculate collisions //
+    if (!isOffScreen(this, this.game.viewport)) {
+      this.game.objects.atoms.forEach(atom => {
+        if (atom === this) return
+        let d = distance(atom.x, atom.y, this.x, this.y)
+        if (d < this.hitboxRadius + atom.hitboxRadius) {
+          this.x = ((this.x - atom.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.x
+          this.y = ((this.y - atom.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.y
 
-        atom.x = ((atom.x - this.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.x
-        atom.y = ((atom.y - this.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.y
-      }
-    })
+          atom.x = ((atom.x - this.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.x
+          atom.y = ((atom.y - this.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.y
+        }
+      })
+    }
 
     // Handle attacking //
     if (this.attack.primary) { // Primary
@@ -370,21 +425,40 @@ export default class Atom extends GameObject {
   }
 
   special() {
-    console.log(this.decayMode)
+    //this.game.viewport.trauma += 7;
     switch (this.decayMode) {
       case "p":
       case "2p":
       case "3p":
-        this.eject("proton", vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y)), this.decayMode === "3p" ? 3 : this.decayMode === "2p" ? 2 : 1)
+        this.eject("proton", normalise(vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y))), this.decayMode === "3p" ? 3 : this.decayMode === "2p" ? 2 : 1)
         break;
       case "n":
       case "2n":
-        this.eject("neutron", vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y)), this.decayMode === "2n" ? 2 : 1)
+        this.eject("neutron", normalise(vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y))), this.decayMode === "2n" ? 2 : 1)
         break;
       case "A":
         this.shoot("alpha");
         this.addProton(-2);
         this.addNeutron(-2);
+        break;
+      case "B-":
+        this.addNeutron(-1)
+        let s = new Shockwave(this.game, this.team, this.x, this.y);
+
+        this.addProton(1)
+        this.shoot()
+        break;
+      case "B+":
+        this.addNeutron(1)
+        this.addProton(-1)
+        this.shoot()
+        break;
+      case "EC":
+        if (this.shield === "NUH UH") {
+          this.shield = 2000
+        } else { this.shield += 2000 }
+        this.specialCooldown = this.shield
+        break;
       default:
         break;
     }
@@ -411,5 +485,45 @@ export default class Atom extends GameObject {
   get speed() {
     // TODO - fix equation
     return 2 / (this.isotope / 20 + 10);
+  }
+}
+
+
+export class AtomSpawner extends GameObject {
+  constructor(game) {
+    super(game, 0, 0);
+    this.spawnCooldown = 0;
+    this.spawnSpeed = 2500;
+    console.log("atom spawner init")
+    this.spawn()
+  }
+  draw(ctx) {
+    // No sprite //
+  }
+  update(deltaTime) {
+    // If there are already 100 atoms, stop spawning - to improve perfomance and reduce clutter //
+    if (this.game.objects.atoms.length >= 4) return;
+    if (!this.game.debug.enemySpawn) return
+    this.spawnCooldown -= deltaTime;
+    if (this.spawnCooldown <= 0) {
+      this.spawnCooldown = this.spawnSpeed;
+      this.spawn();
+    }
+  }
+  spawn() {
+    let x = randint(-this.game.width / 2, this.game.width / 2);
+    let y = randint(-this.game.height / 2, this.game.height / 2);
+    // INVERTED FOR TETSING - TODO: REVERT
+    if (-distance(x, y, this.game.player.x, this.game.player.y) < -1000) {
+      console.log(`spawn too close to player (${round(distance(x, y, this.game.player.x, this.game.player.y))}px < 1000), retrying`)
+      this.spawn();
+      return;
+    }
+    let element = randItem(randItem(table))
+    if (element.protons === 0) { console.log("attempted to spawn atom with 0 protons, retrying"); this.spawn(); return }
+    let a = new Atom(this.game, 1, x, y)
+    new AI(this.game, a)
+    a.setNucleons(parseInt(element.protons), parseInt(element.neutrons))
+    console.log(`spawn ${a.element}-${a.isotope} at ${x},${y}`)
   }
 }

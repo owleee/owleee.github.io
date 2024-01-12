@@ -681,6 +681,15 @@ export const categoryColours = {
   unknown: "#AAAAAA"
 };
 
+export const decayColours = {
+  "IS": "#000000",
+  "A": "yellow",
+  "B+": "orange",
+  "B-": "aqua",
+  "n": "blue",
+  "EC": "green"
+}
+
 export const lang = {
   en: {
     paused: "PAUSED",
@@ -696,7 +705,7 @@ export const lang = {
     p: "proton emission",
     EC: "electron capture",
     A: "alpha decay",
-    unknown: "unknown",
+    unknown: "unknown - report this pls",
     SF: "spontaneous fission",
     "2n": "2 neutron emission",
     "2p": "2 proton emission",
@@ -740,7 +749,7 @@ export const lang = {
     p: "emisión de protón",
     EC: "captura electrónica",
     A: "desintegración alfa",
-    unknown: "desconocido",
+    unknown: "desconocido - repórtamelo porfi",
     SF: "fisión spontánea",
     "2n": "emisión de dos neutrones",
     "2p": "emisión de dos protones",
@@ -748,7 +757,7 @@ export const lang = {
     unpause: "volver",
     return_to_menu: "menú principal",
     play: "jugar",
-    title: "ATOM GAME",
+    title: "EL JUEGO DE LOS ÁTOMOS",
     options: "opciones",
     "simpler_nucleus_true": "núcleo: sencillo",
     "simpler_nucleus_false": "núcleo: completo",
@@ -764,7 +773,6 @@ export const lang = {
     "movement_false": "movimiento del teclado",
   },
 }
-
 
 export function L(lexeme, language) {
   if (lexeme.includes("NT:")) return lexeme.replace("NT:", "")

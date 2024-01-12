@@ -8,7 +8,7 @@
 import GameObject from "./object.js";
 import { normalise, distance } from "./functions.js";
 
-export default class Pickup extends GameObject {
+export default class AI extends GameObject {
   constructor(game, object) {
     super(game);
     this.object = object;
@@ -29,13 +29,13 @@ export default class Pickup extends GameObject {
     );
     if (
       distanceToPlayer <
-        this.stopRadius +
-          this.object.hitboxRadius +
-          this.game.player.hitboxRadius ||
+      this.stopRadius +
+      this.object.hitboxRadius +
+      this.game.player.hitboxRadius ||
       distanceToPlayer >
-        this.detectionRadius +
-          this.object.hitboxRadius +
-          this.game.player.hitboxRadius
+      this.detectionRadius +
+      this.object.hitboxRadius +
+      this.game.player.hitboxRadius
     ) {
       this.object.velocity = { x: 0, y: 0 };
     } else {

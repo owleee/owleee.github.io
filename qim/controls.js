@@ -16,18 +16,22 @@ export default class Controller {
     document.addEventListener("keydown", (event) => {
       switch (event.key) {
         case this.game.controls.up:
+        case this.game.controls.up.toUpperCase():
           this.forces.up = this.object.speed;
           break;
 
         case this.game.controls.down:
+        case this.game.controls.down.toUpperCase():
           this.forces.down = this.object.speed;
           break;
 
         case this.game.controls.left:
+        case this.game.controls.left.toUpperCase():
           this.forces.left = this.object.speed;
           break;
 
         case this.game.controls.right:
+        case this.game.controls.right.toUpperCase():
           this.forces.right = this.object.speed;
           break;
 
@@ -53,18 +57,22 @@ export default class Controller {
     document.addEventListener("keyup", (event) => {
       switch (event.key) {
         case this.game.controls.up:
+        case this.game.controls.up.toUpperCase():
           this.forces.up = 0;
           break;
 
         case this.game.controls.down:
+        case this.game.controls.down.toUpperCase():
           this.forces.down = 0;
           break;
 
         case this.game.controls.left:
+        case this.game.controls.left.toUpperCase():
           this.forces.left = 0;
           break;
 
         case this.game.controls.right:
+        case this.game.controls.right.toUpperCase():
           this.forces.right = 0;
           break;
 

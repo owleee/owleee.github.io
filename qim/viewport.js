@@ -6,45 +6,44 @@ export default class Viewport {
     this.y = 0;
     this.game = game;
     this.zoom = 1;
+    this.trauma = 0;
     this.xOffset = 0;
     this.yOffset = 0;
     this.updateDimensions();
+    this.shake = {
+      x: 0,
+      y: 0
+    }
   }
   updateDimensions() {
     // Get dimensions of the screen and update own dimensions //
     let canvas = getComputedStyle(document.getElementById("screen"));
-    this.height = canvas.height.replace("px", "");
-    this.width = canvas.width.replace("px", "");
+    this.height = parseFloat(canvas.height.replace("px", ""));
+    this.width = parseFloat(canvas.width.replace("px", ""));
     console.log(
       `resized to ${this.width} ${this.height} at ${this.x} ${this.y}`
     );
   }
   smoothFollow(deltaTime, target, smooth = 0.002) {
     // Calculate the difference between the target and camera positions
-    this.dx = target.x - this.x;
-    this.dy = target.y - this.y;
+    this.dx = target.x - this.x// + Math.random() * this.trauma - this.trauma / 2;
+    this.dy = target.y - this.y// + Math.random() * this.trauma - this.trauma / 2;
 
     // Smoothly move the camera towards the target
     this.x += this.dx * smooth * Math.min(deltaTime);
     this.y += this.dy * smooth * Math.min(deltaTime);
+
+    this.shake = {
+      x: Math.random() * this.trauma - this.trauma / 2,
+      y: Math.random() * this.trauma - this.trauma / 2
+    }
   }
+
   warp(target) {
     this.dx = 0;
     this.dy = 0;
     this.x = target.x;
     this.y = target.y;
-  }
-
-  shake(intensity, limit = 10) {
-    this.xOffset = this.xOffset + (intensity ** 2 * randint(-100, 100)) / 100;
-    this.yOffset = this.yOffset + (intensity ** 2 * randint(-100, 100)) / 100;
-    if (distance(this.xOffset, this.yOffset, this.x, this.y) > limit) {
-      let v = normalise({ x: this.xOffset, y: this.yOffset }, limit);
-      this.xOffset = v.x;
-      this.yOffset = v.y;
-    }
-    this.x += this.xOffset;
-    this.y += this.yOffset;
   }
 
   get centre() {

@@ -1,9 +1,11 @@
 import Viewport from "./viewport.js";
 import { XYrectangle, rectangle, text, round, arraySum, loadCookie, saveCookie } from "./functions.js";
-import { category, categoryColours, L, funFacts } from "./data.js";
+import { category, categoryColours, L, funFacts, elements, symbols, decayColours } from "./data.js";
 import { randint, randItem, elementSymbol } from "./functions.js";
 import { default as Pickup, PickupSpawner } from "./pickup.js";
+import { AtomSpawner } from "./atom.js";
 import { FunFactText } from "./button.js";
+import { table } from "./table.js";
 
 const MENU_STATES = ["MENU", "OPTIONS", "HOWTO", "CREDITS"]
 
@@ -52,6 +54,7 @@ export default class Game {
       foodSpawn: true,
       damage: 1,
       speed: 1,
+      enemySpawn: true
     };
 
     this.mouse = {
@@ -98,6 +101,7 @@ export default class Game {
     let spawner = new PickupSpawner(this);
     // Spawn 250 pickups at the start //
     for (let i = 0; i <= 250; i++) spawner.spawn();
+    let summoner = new AtomSpawner(this);
     this.save()
   }
   togglePause() {
@@ -124,6 +128,7 @@ export default class Game {
     this.funFactCooldown = randint(10000, 20000);
     this.player.x = this.player.y = 0;
     this.addObject(this.player);
+    this.player.shield = "NUH UH";
     if (this.score > this.highscore) {
       this.highscore = this.score;
     }
@@ -150,6 +155,7 @@ export default class Game {
     if (this.gamestate === "RUNNING") {
       // decrement the score wiggle by a small amount //
       this.scoreWiggle = Math.max(0, this.scoreWiggle - 0.005 * deltaTime);
+      this.viewport.trauma = Math.max(0, this.viewport.trauma - 0.01 * deltaTime);
       this.funFactCooldown -= deltaTime;
       if (this.funFactCooldown <= 0) {
         let elementFacts = funFacts.filter((i) => {
@@ -292,8 +298,7 @@ export default class Game {
         this.viewport.center.x,
         50,
         this.player,
-        this.colours.black,
-        this.lang
+        1
       );
 
       text(
@@ -329,6 +334,37 @@ export default class Game {
           style: "bold"
         }
       );
+
+      // Draw nuclide minimap //
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          let tempIsotope = {
+            game: this,
+            protons: this.player.protons + j - 2,
+            isotope: this.player.isotope + i + j - 4,
+            neutrons: this.player.neutrons + i - 2
+          }
+          tempIsotope.element = elements[this.lang][tempIsotope.protons - 1]
+          tempIsotope.symbol = symbols[tempIsotope.protons - 1]
+          try {
+            // Get the isotope's decay mode //
+            let isotopes = table[tempIsotope.protons]; // Get only isotopes of this element
+            isotopes = isotopes.filter((i) => {
+              // Find the specific isotope
+              return i.neutrons == tempIsotope.neutrons;
+            });
+            if (isotopes.length === 0) {
+              tempIsotope.decayMode = "unknown"; // If not found, return "unknown"
+            } else {
+              tempIsotope.decayMode = isotopes[0].decay; // Otherwise return the decay mode
+            }
+          } catch {
+            tempIsotope.decayMode = "unknown"
+          }
+          if (tempIsotope.symbol && tempIsotope.decayMode !== "unknown")
+            elementSymbol(ctx, this.viewport.width + (i * 60) - 275, this.viewport.height - (j * 60) - 60, tempIsotope, 0.5, (tempIsotope.protons == this.player.protons && tempIsotope.neutrons === this.player.neutrons) ? this.colours.white : decayColours[tempIsotope.decayMode], tempIsotope.decayMode === "IS" && !(tempIsotope.protons == this.player.protons && tempIsotope.neutrons === this.player.neutrons) ? "white" : "black")
+        }
+      }
     }
 
     // Pause menu //
@@ -631,6 +667,10 @@ export default class Game {
         this.debug.damage = c[1]
         console.log(`damage set to ${this.debug.damage}x`)
         break;
+      case "cookies":
+        saveCookie(undefined);
+        console.log("Cleared dookies");
+        break;
       case "":
         this.debug.menu = !this.debug.menu;
         console.log(`debug menu ${this.debug.menu ? "shown" : "hidden"}`);
@@ -642,13 +682,12 @@ export default class Game {
   }
 
   save() {
-    let cookie = {
+    saveCookie({
       lang: this.lang,
       settings: this.settings,
       debug: this.debug,
       highscore: this.highscore
-    }
-    saveCookie(cookie);
+    });
   }
 
   addObject(obj) {
@@ -668,7 +707,7 @@ export default class Game {
 
   fx(x) {
     // map world x-coordinates to canvas x-coordinates //
-    return (x - this.viewport.x) * this.viewport.zoom + this.viewport.centre.x;
+    return ((x + this.viewport.shake.x) - this.viewport.x) * this.viewport.zoom + this.viewport.centre.x;
   }
   iFx(x) {
     // map canvas x-coordinates to world x-coordinates //
@@ -678,8 +717,8 @@ export default class Game {
     // map world x-coordinates to canvas x-coordinates //
     return (
       this.viewport.y * this.viewport.zoom +
-      this.viewport.height / 2 -
-      y * this.viewport.zoom
+      this.viewport.centre.y -
+      (y + this.viewport.shake.y) * this.viewport.zoom
     );
   }
   iFy(y) {

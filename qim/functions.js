@@ -99,6 +99,7 @@ export function distance(x1, y1, x2, y2) {
   return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 }
 
+
 // use nothing but addition and subtraction to approximate distance //
 export function _approxDist(x1, y1, x2, y2) {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
@@ -145,6 +146,8 @@ export function round(x, places = 0) {
   return Math.round(x * 10 ** places) / 10 ** places;
 }
 
+console.log(round(8192, -3))
+
 export function arraySum(ar) {
   let sum = 0;
   ar.forEach((v) => {
@@ -170,37 +173,37 @@ export function genericEndPop(arr, value, amount) {
   arr.length -= amount;
 }
 
-export function elementSymbol(ctx, x, y, element, colour) {
+export function elementSymbol(ctx, x, y, element, scale, colour, textColour) {
   //rectangle(ctx, this.viewport.centre.x - 50, 50, 100, 100, {
-  rectangle(ctx, x - 50, y, 100, 100, {
-    fillColour: categoryColours[category[element.protons - 1]],
-    lineColour: colour,
-    lineWidth: 2,
-    radii: 5
+  rectangle(ctx, x - 50 * scale, y, 100 * scale, 100 * scale, {
+    fillColour: colour || categoryColours[category[element.protons - 1]],
+    lineColour: element.game.colours.black || textColour,
+    lineWidth: 2 * scale,
+    radii: 5 * scale
   });
 
-  text(ctx, x, y + 50, element.symbol, {
-    size: 60,
-    maxWidth: 90,
-    fillColour: colour
+  text(ctx, x, y + 50 * scale, element.symbol, {
+    size: 60 * scale,
+    maxWidth: 90 * scale,
+    fillColour: textColour || element.game.colours.black
   });
   // Element name text //
-  text(ctx, x, y - 50 + 137.5, element.element, {
-    size: 20,
-    maxWidth: 90,
-    fillColour: colour
+  text(ctx, x, y - (50 - 137.5) * scale, element.element, {
+    size: 20 * scale,
+    maxWidth: 90 * scale,
+    fillColour: textColour || element.game.colours.black
   });
   // Elemental number text //
-  text(ctx, x - 45, y + 5, element.protons, {
-    size: 20,
-    fillColour: colour,
+  text(ctx, x - 45 * scale, y + 5 * scale, element.protons, {
+    size: 20 * scale,
+    fillColour: textColour || element.game.colours.black,
     verticalAlign: "top",
     horizontalAlign: "left"
   });
   // Isotope number text //
-  text(ctx, x + 45, y + 5, element.isotope, {
-    size: 20,
-    fillColour: colour,
+  text(ctx, x + 45 * scale, y + 5 * scale, element.isotope, {
+    size: 20 * scale,
+    fillColour: textColour || element.game.colours.black,
     verticalAlign: "top",
     horizontalAlign: "right"
   });

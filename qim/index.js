@@ -250,13 +250,15 @@ symbolButton.updateText = (b) => {
   b.label = `symbols_${game.settings.readouts}`
 }
 
+/*
 let testEnemy = new Atom(game, 1, 200, 200);
 testEnemy.addProton(100);
 testEnemy.addNeutron(100);
 shuffleArray(testEnemy.nucleons)
 new AI(game, testEnemy);
+*/
 
-// Attempt to fix bug with viewport movement - does not seem to work //
+// Attempt to fix bug with viewport movement - does not seem to fully work //
 window.addEventListener("focus", (event) => {
   game.viewport.warp(player);
 });
