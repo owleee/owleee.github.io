@@ -191,7 +191,7 @@ let creditsButton = new Button(
 creditsButton.gamestate = ["MENU"];
 
 let nucleusSettingsButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 100 }, 600, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 100 - game.scroll - 50 }, 600, 80, "", () => {
     game.settings.simplerNucleus = !game.settings.simplerNucleus;
   }
 )
@@ -201,7 +201,7 @@ nucleusSettingsButton.updateText = (b) => {
 }
 
 let electronSettingsButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y }, 700, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - game.scroll - 50 }, 700, 80, "", () => {
     game.settings.simplerElectrons = (game.settings.simplerElectrons + 1) % 3;
   }
 )
@@ -211,7 +211,7 @@ electronSettingsButton.updateText = (b) => {
 }
 
 let languageButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 200 }, 600, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y - 200 - game.scroll - 50 }, 600, 80, "", () => {
     game.lang = game.lang === "es" ? "en" : "es";
   }
 )
@@ -221,7 +221,7 @@ languageButton.updateText = (b) => {
 }
 
 let movementButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 100 }, 700, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 100 - game.scroll - 50 }, 700, 80, "", () => {
     game.settings.mouseMovement = !game.settings.mouseMovement
   }
 )
@@ -231,7 +231,7 @@ movementButton.updateText = (b) => {
 }
 
 let scrollButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 200 }, 700, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 200 - game.scroll - 50 }, 700, 80, "", () => {
     game.settings.scroll *= -1;
   }
 )
@@ -241,7 +241,7 @@ scrollButton.updateText = (b) => {
 }
 
 let symbolButton = new TextButton(
-  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 300 }, 700, 80, "", () => {
+  game, (x) => { return game.viewport.center.x }, y => { return game.viewport.center.y + 300 - game.scroll - 50 }, 700, 80, "", () => {
     game.settings.readouts = !game.settings.readouts;
   }
 )
