@@ -60,7 +60,7 @@ export default class Atom extends GameObject {
 
     this.nucleons = [];
 
-    this.trauma = 10;
+    this.trauma = 0;
     this.nucleusOffset = { x: 0, y: 0 }
 
     this.attackCooldown = 0;
