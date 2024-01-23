@@ -733,7 +733,8 @@ export const lang = {
     "scroll_1": "normal scrolling",
     "scroll_-1": "inverted scrolling",
     "symbols_true": "symbols shown",
-    "symbols_false": "symbols hidden"
+    "symbols_false": "symbols hidden",
+    "gameover": "GAME OVER"
   },
   es: {
     paused: "PAUSADO",

@@ -250,6 +250,23 @@ symbolButton.updateText = (b) => {
   b.label = `symbols_${game.settings.readouts}`
 }
 
+let restartButton = new Button(
+  game,
+  (x) => {
+    return game.viewport.width / 2;
+  },
+  (y) => {
+    return game.viewport.height / 2 + 300;
+  },
+  300,
+  80,
+  "return_to_menu",
+  () => {
+    game.returnToMenu()
+  }
+);
+restartButton.gamestate = ["GAMEOVER"];
+
 /*
 let testEnemy = new Atom(game, 1, 200, 200);
 testEnemy.addProton(100);
@@ -270,7 +287,7 @@ function gameLoop(timestamp) {
   // Allow the game to run independently of framerate //
   let deltaTime = timestamp - lastTime;
   lastTime = game.time = timestamp;
-  if (game.gamestate === "PAUSED") {
+  if (game.gamestate === "PAUSED" || game.gamestate === "GAMEOVER") {
     game.times.paused += deltaTime;
   }
 

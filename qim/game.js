@@ -38,6 +38,8 @@ export default class Game {
     };
     this.scroll = 0
 
+    this.boomFlash = 0
+
     this.settings = {
       mouseMovement: false,
       simplerNucleus: false, // make the nucleus a single circle
@@ -71,8 +73,8 @@ export default class Game {
       left: "a",
       right: "d",
       menu: "Escape",
-      attack: "not bound :3 :3",
-      special: "not boundy woundy >w<"
+      attack: "e",
+      special: "q"
     };
     this.colours = {
       black: "#031926",
@@ -147,15 +149,21 @@ export default class Game {
     this.gamestate = "CREDITS"
   }
 
+  gameOver() {
+    this.gamestate = "GAMEOVER"
+  }
+
   update(deltaTime) {
     this.tick += 1;
     this.deltaTime = deltaTime;
 
     // TODO - clean up fun fact code // Make own function?
-    if (this.gamestate === "RUNNING") {
+    if (this.gamestate === "RUNNING" || this.gamestate === "GAMEOVER") {
       // decrement the score wiggle by a small amount //
       this.scoreWiggle = Math.max(0, this.scoreWiggle - 0.005 * deltaTime);
-      this.viewport.trauma = Math.max(0, this.viewport.trauma - 0.01 * deltaTime);
+      this.viewport.trauma = Math.max(0, this.viewport.trauma * (0.97 ** deltaTime));
+      this.boomFlash = Math.max(0, this.boomFlash - deltaTime);
+      if (this.viewport.trauma < 0.001) this.viewport.trauma = 0;
       this.funFactCooldown -= deltaTime;
       if (this.funFactCooldown <= 0) {
         let elementFacts = funFacts.filter((i) => {
@@ -192,6 +200,8 @@ export default class Game {
     }
 
     this.menuObjects.forEach((object) => object.update(deltaTime));
+
+
     for (let i in this.menuObjects) {
       if (this.menuObjects[i].hovered) {
         this.mouse.onButton = true;
@@ -213,7 +223,7 @@ export default class Game {
     }
 
     if (
-      this.gamestate !== "RUNNING"
+      this.gamestate !== "RUNNING" && this.gamestate !== "GAMEOVER"
     )
       return;
     this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);
@@ -292,25 +302,8 @@ export default class Game {
 
     // Element symbol //
 
-    if (["PAUSED", "RUNNING"].includes(this.gamestate)) {
-      elementSymbol(
-        ctx,
-        this.viewport.center.x,
-        50,
-        this.player,
-        1
-      );
+    if (["PAUSED", "RUNNING", "GAMEOVER"].includes(this.gamestate)) {
 
-      text(
-        ctx,
-        this.viewport.center.x,
-        170,
-        L(this.player.decayMode, this.lang),
-        {
-          size: 20,
-          fillColour: this.colours.black
-        }
-      );
       // Draw fun-fact marquee // TODO - implement scrolling fun facts about the specific element, atoms in general, or jokes/easter eggs
       //                       // inspired by antimatter dimensions, plague inc,
       rectangle(ctx, -10, -10, this.viewport.width + 10, 10 + 35, {
@@ -334,6 +327,33 @@ export default class Game {
           style: "bold"
         }
       );
+
+      if (this.player.combo) {
+        text(ctx, this.viewport.width - 155, this.viewport.height - 340, `Decay Chain x${this.player.combo}`, { fillColour: this.colours.black, size: 30 })
+        XYrectangle(ctx, this.viewport.width - 10 - (290 * (this.player.comboTimer / 1200)), this.viewport.height - 320, this.viewport.width - 300 + 290, this.viewport.height - 320 + 10, { fillColour: this.colours.red, radii: 5, lineWidth: 2, lineColour: this.colours.black })
+      }
+
+    }
+    if (["PAUSED", "RUNNING",].includes(this.gamestate)) {
+      elementSymbol(
+        ctx,
+        this.viewport.center.x,
+        50,
+        this.player,
+        1
+      );
+
+      text(
+        ctx,
+        this.viewport.center.x,
+        170,
+        L(this.player.decayMode, this.lang),
+        {
+          size: 20,
+          fillColour: this.colours.black
+        }
+      );
+
 
       // Draw nuclide minimap //
       for (let i = 0; i < 5; i++) {
@@ -383,7 +403,24 @@ export default class Game {
           maxWidth: this.viewport.width
         }
       );
-    } else if (this.gamestate === "MENU") {
+    } else if (this.gamestate === "GAMEOVER") {
+      rectangle(ctx, 0, 0, this.viewport.width, this.viewport.height, {
+        fillColour: "rgba(0,0,0,0.5)"
+      });
+      text(
+        ctx,
+        this.viewport.centre.x,
+        this.viewport.height / 4,
+        L("gameover", this.lang),
+        {
+          size: 200,
+          fillColour: this.colours.white,
+          maxWidth: this.viewport.width
+        }
+      );
+    }
+
+    else if (this.gamestate === "MENU") {
       text(
         ctx,
         this.viewport.centre.x,
@@ -477,6 +514,12 @@ export default class Game {
     }
     // Draw menu objects //
     this.menuObjects.forEach((object) => object.draw(ctx));
+
+    console.log()
+
+
+    rectangle(ctx, 0, 0, this.viewport.width, this.viewport.height, { fillColour: `rgba(255,255,255,${Math.min(Math.max(this.boomFlash / 5000, 0), 1)})` });
+
     if (this.debug.menu) {
       let debugStyle = {
         fillColour: "black",
@@ -626,6 +669,7 @@ export default class Game {
         debugStyle
       );
       text(ctx, 10, 210, this.scroll, debugStyle);
+      text(ctx, 10, 240, this.viewport.trauma, debugStyle);
     }
   }
 
@@ -640,6 +684,9 @@ export default class Game {
       case "n":
         this.player.addNeutron(parseInt(c[1], 10));
         console.log(`added ${c[1]} neutron(s)`);
+        break;
+      case "pn":
+        this.player.setNucleons(parseInt(c[1], 10), parseInt(c[2], 10));
         break;
       case "tp":
         this.player.x = parseInt(c[1], 10);
@@ -657,6 +704,7 @@ export default class Game {
             break;
         }
         break;
+
 
       case "speed":
         this.debug.speed = c[1]

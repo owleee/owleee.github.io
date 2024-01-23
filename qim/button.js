@@ -132,7 +132,7 @@ export class FunFactText {
   update(deltaTime) {
     if (this.game.gamestate === "RUNNING") {
       this.x -= deltaTime * 0.075;
-    } else if (this.game.gamestate === "PAUSED") {
+    } else if (this.game.gamestate === "PAUSED" || this.game.gamestate === "GAMEOVER") {
       this.x -= deltaTime * 0.01;
     }
     if (!this.deleteMe) this.game.funFactCooldown = 69420;

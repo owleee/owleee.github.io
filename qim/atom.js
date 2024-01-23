@@ -8,7 +8,7 @@ import {
   endPop,
   distance,
   vector, text,
-  TRvector, round, randItem, shuffleArray
+  TRvector, round, randItem, shuffleArray, distanceSquared
 } from "./functions.js";
 import { table } from "./table.js";
 import { default as Bullet, Shockwave } from "./bullet.js";
@@ -71,6 +71,10 @@ export default class Atom extends GameObject {
     this.times = { shooting: 0, moving: 0 };
 
     this.shield = "NUH UH";
+    this.iFrames = 0
+
+    this.combo = 0;
+    this.comboTimer = 0;
 
     this.accuracy = 1;
 
@@ -92,8 +96,10 @@ export default class Atom extends GameObject {
     }
 
     // If there are already max protons, end //
-    if (this.protons >= 118) {
-      this.protons = 118;
+    if (this.protons + n >= 118) {
+      console.log((this.protons + n) - 118)
+
+      this.eject("proton", normalise(vector((this.game.iFx(this.game.mouse.x) - this.x), (this.game.iFy(this.game.mouse.y) - this.y))), n)
       return;
     }
     this.protons += n;
@@ -128,6 +134,14 @@ export default class Atom extends GameObject {
     for (let i = 0; i < neutrons; i++) this.nucleons.push(N); // Add the protons to the nucleon array
     this.getDecayMode(); // Update the atom's decay mode
     shuffleArray(this.nucleons);
+
+    if (this.nucleons[0] === N) {
+      console.log("uh oh")
+      let firstProton = this.nucleons.indexOf(P)
+      this.nucleons[0] = P;
+      this.nucleons[firstProton] = N
+      console.log(this.nucleons)
+    }
   }
 
 
@@ -153,6 +167,7 @@ export default class Atom extends GameObject {
   }
 
   takeDamage(damage = 1, damagePos = {}) {
+    if (this.iFrames && damage < 500) return;
     if (this.team === 1) damage *= this.game.debug.damage;
     this.game.viewport.trauma += damage * 2
     this.game.addScore(damage);
@@ -171,6 +186,9 @@ export default class Atom extends GameObject {
   }
 
   draw(ctx) {
+
+    if (!this.element) return
+
     // Rudimentary check to see if atom is offscreen //
     // Ensure no unnecessary costly trig & sqrt calculations are used //
     // Theoretically improve performance //
@@ -189,7 +207,7 @@ export default class Atom extends GameObject {
         this.game.fz(this.nucleusRadius),
         {
           fillColour: this.game.colours.red,
-          lineColour: this.game.colours.black,
+          lineColour: this.iFrames ? `rgb(${255 * Math.sin(this.iFrames)},${255 * Math.sin(this.iFrames)},${255 * Math.sin(this.iFrames)})` : this.game.colours.black,
           lineWidth: this.game.fz(2)
         }
       );
@@ -201,7 +219,7 @@ export default class Atom extends GameObject {
         let x = n * pos.x + this.x + this.nucleusOffset.x;
         let y = n * pos.y + this.y + this.nucleusOffset.y;
         circle(ctx, this.game.fx(x), this.game.fy(y), this.game.fz(5), {
-          fillColour: this.game.colours.black
+          fillColour: this.iFrames ? `rgb(${255 * Math.sin(this.iFrames)},${255 * Math.sin(this.iFrames)},${255 * Math.sin(this.iFrames)})` : this.game.colours.black,
         });
       });
       [...this.nucleons].reverse().forEach((v, i) => {
@@ -304,45 +322,41 @@ export default class Atom extends GameObject {
     super.update(deltaTime);
     this.attackCooldown = Math.max(this.attackCooldown - deltaTime, 0);
     this.specialCooldown = Math.max(this.specialCooldown - deltaTime, 0);
+    this.iFrames = Math.max(0, this.iFrames - deltaTime);
     this.trauma = Math.max(0, this.trauma - 0.01 * deltaTime);
+    this.comboTimer = Math.max(0, this.comboTimer - deltaTime);
+    if (this.comboTimer === 0) this.combo = 0;
 
     if (this.shield !== "NUH UH") this.shield = Math.max(this.shield - deltaTime, 0);
 
     if (this.shield === 0) {
-      this.addProton(-1)
-      this.addNeutron(1)
       this.shield = "NUH UH"
     }
 
-    // Check for bullet collisions //
-    this.game.objects.bullets.filter(i => {
-      // Filter only enemy bullets //
-      return i.team !== this.team;
-    }).forEach(bullet => {
-      // If the two collide (overlap) //
-      if (bullet.hitboxRadius + this.hitboxRadius >= distance(bullet.x, bullet.y, this.x, this.y)) {
-        this.takeDamage(this.shield === "NUH UH" ? randint(1, 3) : 0, { x: bullet.x, y: bullet.y });
-        // Delete bullet // TODO - pierce
-        bullet.deleteMe = true;
-      }
-      // DIE //
-      if (this.nucleons.length === 0) {
+    // DIE //
+    if (this.nucleons.length === 0) {
+      if (this === this.game.player) {
+        console.log("you killed yourself NOW")
+        this.game.gameOver()
+      } else {
         this.game.addScore(10);
         this.deleteMe = true;
-      };
-    })
+      }
+    };
 
     // Iterate over every other atom and calculate collisions //
     if (!isOffScreen(this, this.game.viewport)) {
       this.game.objects.atoms.forEach(atom => {
-        if (atom === this) return
-        let d = distance(atom.x, atom.y, this.x, this.y)
-        if (d < this.hitboxRadius + atom.hitboxRadius) {
-          this.x = ((this.x - atom.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.x
-          this.y = ((this.y - atom.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.y
+        if (atom === this) return;
+        if (!isOffScreen(atom, this.game.viewport)) {
+          let d = distance(atom.x, atom.y, this.x, this.y)
+          if (d < this.hitboxRadius + atom.hitboxRadius) {
+            this.x = ((this.x - atom.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.x
+            this.y = ((this.y - atom.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + atom.y
 
-          atom.x = ((atom.x - this.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.x
-          atom.y = ((atom.y - this.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.y
+            atom.x = ((atom.x - this.x) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.x
+            atom.y = ((atom.y - this.y) / d) * ((this.hitboxRadius + atom.hitboxRadius + d) / 2) + this.y
+          }
         }
       })
     }
@@ -366,7 +380,7 @@ export default class Atom extends GameObject {
     }
   }
 
-  shoot(type = "electron") {
+  shoot(type = "electron", damageMultiplier = 1) {
     // Spawn a bullet // TODO - make bullets spawn around the atom not at center // partly implemented
     let spawnPos = normalise(
       {
@@ -382,22 +396,24 @@ export default class Atom extends GameObject {
       this.y + spawnPos.y
     );
     bullet.type = type;
+    if (type === "alpha") { bullet.damage = 10 * damageMultiplier } else if (type === "positron") { bullet.damage = 10 * damageMultiplier; bullet.type = "electron"; bullet.pierce = 1000; }
     // Apply velocity such that the bullet shoots towards the mouse //
     bullet.velocity = normalise({
       x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
       y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
     }, bullet.type === "alpha" ? 0.25 : 1);
 
-    // Add the atom's own velocity //
+    // Add the atom's own velocity and bullet bloom //
+    let bloom = (this.decayMode !== "IS");
     bullet.velocity = {
       x:
         bullet.velocity.x +
         this.velocity.x +
-        randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
+        bloom * randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
       y:
         bullet.velocity.y +
         this.velocity.y +
-        randint(-this.accuracy * 100, this.accuracy * 100) / 1000
+        bloom * randint(-this.accuracy * 100, this.accuracy * 100) / 1000
     };
   }
 
@@ -425,6 +441,10 @@ export default class Atom extends GameObject {
   }
 
   special() {
+    if (this.decayMode !== "IS") {
+      if (this.comboTimer > 0) { this.combo += 1 }
+      this.comboTimer = 1200
+    }
     //this.game.viewport.trauma += 7;
     switch (this.decayMode) {
       case "p":
@@ -442,23 +462,40 @@ export default class Atom extends GameObject {
         this.addNeutron(-2);
         break;
       case "B-":
+        // electron (weak bullet) & antineutrino (strong shockwave)
         this.addNeutron(-1)
         let s = new Shockwave(this.game, this.team, this.x, this.y);
+        s.hitboxRadius = this.hitboxRadius;
+        s.damage = 7 * this.combo;
 
         this.addProton(1)
-        this.shoot()
+        this.shoot("electron", this.combo)
         break;
       case "B+":
+        // positron (strong bullet) & antineutrino (weak shockwave)
         this.addNeutron(1)
+        let s2 = new Shockwave(this.game, this.team, this.x, this.y);
+        s2.hitboxRadius = this.hitboxRadius;
+        s2.damage = 1 * this.combo;
+        s2.speed = 0.2;
         this.addProton(-1)
-        this.shoot()
+        this.shoot("positron", this.combo)
         break;
       case "EC":
         if (this.shield === "NUH UH") {
-          this.shield = 2000
-        } else { this.shield += 2000 }
-        this.specialCooldown = this.shield
+          this.shield = 2000 * (this.combo + 1)
+        } else { this.shield += 2000 * (this.combo + 1) }
+        this.addProton(-1)
+        this.addNeutron(1)
         break;
+      case "SF":
+        // Now I Am Become Death, Destroyer Of Worlds. //
+        this.setNucleons(1, 0)
+        this.game.objects.atoms.forEach(atom => {
+          if (!(atom === this || atom === this.game.player))
+            atom.takeDamage(1000);
+        })
+        this.game.boomFlash = 7500;
       default:
         break;
     }
@@ -502,7 +539,7 @@ export class AtomSpawner extends GameObject {
   }
   update(deltaTime) {
     // If there are already 100 atoms, stop spawning - to improve perfomance and reduce clutter //
-    if (this.game.objects.atoms.length >= 4) return;
+    if (this.game.objects.atoms.length >= 400) return;
     if (!this.game.debug.enemySpawn) return
     this.spawnCooldown -= deltaTime;
     if (this.spawnCooldown <= 0) {
@@ -513,13 +550,13 @@ export class AtomSpawner extends GameObject {
   spawn() {
     let x = randint(-this.game.width / 2, this.game.width / 2);
     let y = randint(-this.game.height / 2, this.game.height / 2);
-    // INVERTED FOR TETSING - TODO: REVERT
+    // INVERTED FOR TESTING - TODO: REVERT
     if (-distance(x, y, this.game.player.x, this.game.player.y) < -1000) {
       console.log(`spawn too close to player (${round(distance(x, y, this.game.player.x, this.game.player.y))}px < 1000), retrying`)
       this.spawn();
       return;
     }
-    let element = randItem(randItem(table))
+    let element = randItem(table[randint(Math.max(this.game.player.protons - 5, 1), Math.min(this.game.player.protons + 5, 118))])
     if (element.protons === 0) { console.log("attempted to spawn atom with 0 protons, retrying"); this.spawn(); return }
     let a = new Atom(this.game, 1, x, y)
     new AI(this.game, a)

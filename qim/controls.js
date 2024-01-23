@@ -40,11 +40,11 @@ export default class Controller {
           break;
 
         case this.game.controls.attack:
-          this.object.attackType = 1;
+          this.object.attack.primary = true;
           break;
 
         case this.game.controls.special:
-          this.object.attackType = 2;
+          this.object.attack.secondary = true;
           break;
 
         default:
@@ -74,6 +74,14 @@ export default class Controller {
         case this.game.controls.right:
         case this.game.controls.right.toUpperCase():
           this.forces.right = 0;
+          break;
+
+        case this.game.controls.attack:
+          this.object.attack.primary = false;
+          break;
+
+        case this.game.controls.special:
+          this.object.attack.secondary = false;
           break;
 
         default:

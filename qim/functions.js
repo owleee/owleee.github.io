@@ -99,6 +99,10 @@ export function distance(x1, y1, x2, y2) {
   return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 }
 
+export function distanceSquared(x1, y1, x2, y2) {
+  return (x1 - x2) ** 2 + (y1 - y2) ** 2;
+}
+
 
 // use nothing but addition and subtraction to approximate distance //
 export function _approxDist(x1, y1, x2, y2) {
