@@ -530,7 +530,7 @@ export class AtomSpawner extends GameObject {
   constructor(game) {
     super(game, 0, 0);
     this.spawnCooldown = 0;
-    this.spawnSpeed = 2500;
+    this.spawnSpeed = 7500;
     console.log("atom spawner init")
     this.spawn()
   }
