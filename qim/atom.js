@@ -551,7 +551,7 @@ export class AtomSpawner extends GameObject {
     let x = randint(-this.game.width / 2, this.game.width / 2);
     let y = randint(-this.game.height / 2, this.game.height / 2);
     // INVERTED FOR TESTING - TODO: REVERT
-    if (-distance(x, y, this.game.player.x, this.game.player.y) < -1000) {
+    if (-distance(x, y, this.game.player.x, this.game.player.y) > -1000) {
       console.log(`spawn too close to player (${round(distance(x, y, this.game.player.x, this.game.player.y))}px < 1000), retrying`)
       this.spawn();
       return;
