@@ -21,6 +21,7 @@ export default class AI extends GameObject {
     return;
   }
   update(deltaTime) {
+    this.object.attack.primary = true;
     let distanceToPlayer = distance(
       this.object.x,
       this.object.y,

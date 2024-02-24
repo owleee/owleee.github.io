@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="pixelCanvas" width="400" height="400"></canvas>
+
+    <script type="module">
+        import { table } from "./table.js"
+        // Get the canvas element
+        const canvas = document.getElementById('pixelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Define pixel size and color
+        const pixelSize = 2;
+        var pixelColor = 'blue';
+
+        // Function to draw a pixel at specified coordinates
+        function drawPixel(x, y, colour = "black") {
+            ctx.fillStyle = colour;
+            ctx.fillRect(x, y, pixelSize, pixelSize);
+        }
+
+        const colours = {
+            black: "#031926",
+            white: "#F4F4F6",
+            blue: "#1E21BF",
+            red: "#BF211E",
+            grey: "#AAAAAA",
+            pink: "#FF4DFF",
+            shield: "#ADAEE4"
+        };
+
+        /* Example: drawing pixels at random positions
+        for (let i = 0; i < 100; i++) {
+            const x = Math.floor(Math.random() * (canvas.width / pixelSize));
+            const y = Math.floor(Math.random() * (canvas.height / pixelSize));
+            drawPixel(x, y);
+        }*/
+        table.forEach((v, i) => {
+            v.forEach((u, j) => {
+                let c = colours.pink;
+                if (u.decay === "IS") c = colours.black
+                if (u.decay === "B+") c = colours.red
+                if (u.decay === "p") c = colours.red
+                if (u.decay === "2p") c = colours.red
+                if (u.decay === "B-") c = colours.blue
+                if (u.decay === "n") c = colours.blue
+                if (u.decay === "2n") c = colours.blue
+                if (u.decay === "SF") c = colours.grey
+                if (u.decay === "EC") c = colours.shield
+                drawPixel(u.protons * pixelSize, u.neutrons * pixelSize, c);
+            })
+        })
+    </script>
+</body>
+
+</html>

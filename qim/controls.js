@@ -144,6 +144,10 @@ export default class Controller {
   }
 
   resolveForces(forces) {
+    if (this.object.dead) {
+      this.object.velocity = { x: 0, y: 0 }
+      return
+    }
     // If the movement mode is set to cursor-based //
     if (this.game.settings.mouseMovement) {
       // If the cursor is within the atom's radius //
@@ -177,7 +181,7 @@ export default class Controller {
           x: this.forces.right - forces.left,
           y: this.forces.up - forces.down
         },
-        this.game.debug.speed * this.object.speed
+        this.game.debug.speed * this.object.speed * 1.5
       );
     }
   }

@@ -9,6 +9,12 @@ import { table } from "./table.js";
 
 const MENU_STATES = ["MENU", "OPTIONS", "HOWTO", "CREDITS"]
 
+const LOGO = {
+  IMAGE: document.getElementById("logo"),
+  HEIGHT: 757 / 2.5,
+  WIDTH: 4828 / 2.5
+}
+
 // Game Manager class
 export default class Game {
   constructor() {
@@ -45,7 +51,8 @@ export default class Game {
       simplerNucleus: false, // make the nucleus a single circle
       simplerElectrons: 0, // make the electron shell <something?> TODO - elaborate
       scroll: 1,
-      readouts: true
+      readouts: true,
+      epilepsy: false,
     };
 
     this.funFactCooldown = 1000;
@@ -76,15 +83,10 @@ export default class Game {
       attack: "e",
       special: "q"
     };
-    this.colours = {
-      black: "#031926",
-      white: "#F4F4F6",
-      blue: "#1E21BF",
-      red: "#BF211E",
-      grey: "#AAAAAA",
-      pink: "#FF4DFF"
-    };
+
   }
+
+
 
   only(c) {
     return this.gameObjects.filter(i => {
@@ -98,6 +100,7 @@ export default class Game {
     this.player.neutrons = 0;
     this.player.nucleons.length = 0;
     this.player.addProton();
+    this.player.dead = false;
     this.score = 0;
 
     let spawner = new PickupSpawner(this);
@@ -153,7 +156,34 @@ export default class Game {
     this.gamestate = "GAMEOVER"
   }
 
+  get randomColour() {
+    return `rgb(${randint(0, 255)},${randint(0, 255)},${randint(0, 255)})`;
+  }
+
+  get colours() {
+    if (!this.settings.epilepsy) {
+      return {
+        black: "#031926",
+        white: "#F4F4F6",
+        blue: "#1E21BF",
+        red: "#BF211E",
+        grey: "#AAAAAA",
+        pink: "#FF4DFF"
+      };
+    } else {
+      return {
+        black: this.randomColour,
+        white: this.randomColour,
+        blue: this.randomColour,
+        red: this.randomColour,
+        grey: this.randomColour,
+        pink: this.randomColour
+      };
+    }
+  }
+
   update(deltaTime) {
+
     this.tick += 1;
     this.deltaTime = deltaTime;
 
@@ -188,19 +218,20 @@ export default class Game {
           ).fact;
         }
 
+        text = text.replace("<%n>", funFacts.length)
+
         new FunFactText(this, this.viewport.width, 35 / 2, text);
       }
     }
 
     // TODO - drag scrolling
-    if (["HOWTO", "CREDITS"].includes(this.gamestate)) {
+    if (["HOWTO", "CREDITS", "OPTIONS"].includes(this.gamestate)) {
       if (this.mouse.clicked) {
         this.scroll = Math.max(this.mouse.clickPos.y - this.mouse.y + this.mouse.clickPos.scroll, 0)
       }
     }
 
     this.menuObjects.forEach((object) => object.update(deltaTime));
-
 
     for (let i in this.menuObjects) {
       if (this.menuObjects[i].hovered) {
@@ -226,16 +257,23 @@ export default class Game {
       this.gamestate !== "RUNNING" && this.gamestate !== "GAMEOVER"
     )
       return;
-    this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);
+    function inf(n, x = 1) {
+      if (n === Infinity) return x;
+      return n
+    }
+    this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);//this.player.hitboxRadius);
+    console.log(1 / (this.player.hitboxRadius / 20))
 
     // Iterate over all objects and call their update method //
     this.gameObjects.forEach((object) => object.update(deltaTime));
     //this.viewport.shake(1, 1);
 
     // Make the game viewport/"camera" smoothly follow the player // customisable in settings?
-    this.viewport.smoothFollow(deltaTime, this.player);
+    this.viewport.smoothFollow(deltaTime, this.playerKiller || this.player);
 
     // Iterate over all objects and check whether they have been marked for deletion //
+    if (this.playerKiller)
+      if (this.playerKiller.deleteMe) this.playerKiller = null;
     this.gameObjects = this.gameObjects.filter((object) => !object.deleteMe);
     this.objects.atoms = this.objects.atoms.filter((object) => !object.deleteMe);
     this.objects.food = this.objects.food.filter((object) => !object.deleteMe);
@@ -330,7 +368,7 @@ export default class Game {
 
       if (this.player.combo) {
         text(ctx, this.viewport.width - 155, this.viewport.height - 340, `Decay Chain x${this.player.combo}`, { fillColour: this.colours.black, size: 30 })
-        XYrectangle(ctx, this.viewport.width - 10 - (290 * (this.player.comboTimer / 1200)), this.viewport.height - 320, this.viewport.width - 300 + 290, this.viewport.height - 320 + 10, { fillColour: this.colours.red, radii: 5, lineWidth: 2, lineColour: this.colours.black })
+        XYrectangle(ctx, this.viewport.width - 10 - (290 * (this.player.comboTimer / 1500)), this.viewport.height - 320, this.viewport.width - 300 + 290, this.viewport.height - 320 + 10, { fillColour: this.colours.red, radii: 5, lineWidth: 2, lineColour: this.colours.black })
       }
 
     }
@@ -421,6 +459,12 @@ export default class Game {
     }
 
     else if (this.gamestate === "MENU") {
+
+      let lx = this.viewport.centre.x
+      let ly = this.viewport.height / 4 + 10 * Math.sin(this.time / 1000 + 100) - 20
+
+      ctx.drawImage(LOGO.IMAGE, lx - LOGO.WIDTH / 2, ly - LOGO.HEIGHT / 2, LOGO.WIDTH, LOGO.HEIGHT)
+
       text(
         ctx,
         this.viewport.centre.x,
@@ -435,6 +479,7 @@ export default class Game {
           style: "bold"
         }
       );
+
       if (this.isDev) {
         text(
           ctx,
@@ -715,9 +760,13 @@ export default class Game {
         this.debug.damage = c[1]
         console.log(`damage set to ${this.debug.damage}x`)
         break;
+      case "cookie":
       case "cookies":
-        saveCookie(undefined);
+        saveCookie({});
         console.log("Cleared dookies");
+        break;
+      case "shield":
+        this.player.shield = parseInt(c[1])
         break;
       case "":
         this.debug.menu = !this.debug.menu;
@@ -726,7 +775,8 @@ export default class Game {
       default:
         break;
     }
-    this.save();
+    if (c[0] !== "cookies" && c[0] !== "cookie")
+      this.save();
   }
 
   save() {

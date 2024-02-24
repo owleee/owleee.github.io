@@ -33,8 +33,10 @@ for (let i = 0; i < 500; i++) {
 // Look up the aforementioned values or calculate them if needed //
 function getNucleonPosition(n) {
   if (nucleonPositions[n]) {
+    // Look up values in array //
     return nucleonPositions[n];
   } else {
+    // Calculate extra values //
     return {
       x: Math.cos(n * PI * PHI * 2) * Math.sqrt(n),
       y: Math.sin(n * PI * PHI * 2) * Math.sqrt(n)
@@ -59,6 +61,8 @@ export default class Atom extends GameObject {
     this.protons = 0;
 
     this.nucleons = [];
+
+    this.dead = false;
 
     this.trauma = 0;
     this.nucleusOffset = { x: 0, y: 0 }
@@ -136,11 +140,9 @@ export default class Atom extends GameObject {
     shuffleArray(this.nucleons);
 
     if (this.nucleons[0] === N) {
-      console.log("uh oh")
       let firstProton = this.nucleons.indexOf(P)
       this.nucleons[0] = P;
       this.nucleons[firstProton] = N
-      console.log(this.nucleons)
     }
   }
 
@@ -333,16 +335,25 @@ export default class Atom extends GameObject {
       this.shield = "NUH UH"
     }
 
+    if (this.attackCooldown === Infinity) { this.attackCooldown = 0 }
+    if (this.specialCooldown === Infinity) { this.specialCooldown = 0 }
     // DIE //
     if (this.nucleons.length === 0) {
       if (this === this.game.player) {
-        console.log("you killed yourself NOW")
+        this.dead = true;
         this.game.gameOver()
       } else {
         this.game.addScore(10);
         this.deleteMe = true;
       }
     };
+
+    if (this === this.game.player) {
+      this.target = {
+        x: this.game.iFx(this.game.mouse.x),
+        y: this.game.iFy(this.game.mouse.y),
+      }
+    } else (this.target = this.game.player)
 
     // Iterate over every other atom and calculate collisions //
     if (!isOffScreen(this, this.game.viewport)) {
@@ -381,11 +392,12 @@ export default class Atom extends GameObject {
   }
 
   shoot(type = "electron", damageMultiplier = 1) {
+    if (this.dead) return;
     // Spawn a bullet // TODO - make bullets spawn around the atom not at center // partly implemented
     let spawnPos = normalise(
       {
-        x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
-        y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
+        x: (this.target.x - this.x) / 1000,
+        y: (this.target.y - this.y) / 1000
       },
       this.hitboxRadius
     );
@@ -399,20 +411,18 @@ export default class Atom extends GameObject {
     if (type === "alpha") { bullet.damage = 10 * damageMultiplier } else if (type === "positron") { bullet.damage = 10 * damageMultiplier; bullet.type = "electron"; bullet.pierce = 1000; }
     // Apply velocity such that the bullet shoots towards the mouse //
     bullet.velocity = normalise({
-      x: (this.game.iFx(this.game.mouse.x) - this.x) / 1000,
-      y: (this.game.iFy(this.game.mouse.y) - this.y) / 1000
+      x: (this.target.x - this.x) / 1000,
+      y: (this.target.y - this.y) / 1000
     }, bullet.type === "alpha" ? 0.25 : 1);
 
-    // Add the atom's own velocity and bullet bloom //
+    // Add bullet bloom //
     let bloom = (this.decayMode !== "IS");
     bullet.velocity = {
       x:
         bullet.velocity.x +
-        this.velocity.x +
         bloom * randint(-this.accuracy * 100, this.accuracy * 100) / 1000,
       y:
         bullet.velocity.y +
-        this.velocity.y +
         bloom * randint(-this.accuracy * 100, this.accuracy * 100) / 1000
     };
   }
@@ -441,9 +451,10 @@ export default class Atom extends GameObject {
   }
 
   special() {
+    if (this.dead) return;
     if (this.decayMode !== "IS") {
       if (this.comboTimer > 0) { this.combo += 1 }
-      this.comboTimer = 1200
+      this.comboTimer = 1500
     }
     //this.game.viewport.trauma += 7;
     switch (this.decayMode) {
@@ -514,7 +525,7 @@ export default class Atom extends GameObject {
     return this.protons + this.neutrons;
   }
   get hitboxRadius() {
-    return 15 * shells[this.protons].length + this.nucleusRadius;
+    return this.dead ? 0 : 15 * shells[this.protons].length + this.nucleusRadius;
   }
   // Overwrite the setter for hitboxRadius, as it is determined by an equation (above) //
   set hitboxRadius(v) { }
@@ -525,41 +536,48 @@ export default class Atom extends GameObject {
   }
 }
 
-
 export class AtomSpawner extends GameObject {
   constructor(game) {
     super(game, 0, 0);
     this.spawnCooldown = 0;
     this.spawnSpeed = 7500;
-    console.log("atom spawner init")
-    this.spawn()
   }
   draw(ctx) {
     // No sprite //
   }
   update(deltaTime) {
-    // If there are already 100 atoms, stop spawning - to improve perfomance and reduce clutter //
-    if (this.game.objects.atoms.length >= 400) return;
-    if (!this.game.debug.enemySpawn) return
+
+    // Stop spawning if there are too many enemies, if spawning is disabled or if the player is "dead" //
+    if (this.game.objects.atoms.length >= 400 || !this.game.debug.enemySpawn || this.game.player.dead) return;
+    // Decrement cooldown counter //
     this.spawnCooldown -= deltaTime;
+    // If it's time to spawn //
     if (this.spawnCooldown <= 0) {
+      // Reset cooldown counter //
       this.spawnCooldown = this.spawnSpeed;
+      // Spawn an enemy //
       this.spawn();
     }
   }
   spawn() {
+    // Get a random position in the world //
     let x = randint(-this.game.width / 2, this.game.width / 2);
     let y = randint(-this.game.height / 2, this.game.height / 2);
-    // INVERTED FOR TESTING - TODO: REVERT
-    if (-distance(x, y, this.game.player.x, this.game.player.y) > -1000) {
+    // If the enemy is too close to the player //
+    if (distance(x, y, this.game.player.x, this.game.player.y) < 1000) {
       console.log(`spawn too close to player (${round(distance(x, y, this.game.player.x, this.game.player.y))}px < 1000), retrying`)
+      // Recursively reset the spawn attempt //
       this.spawn();
       return;
     }
-    let element = randItem(table[randint(Math.max(this.game.player.protons - 5, 1), Math.min(this.game.player.protons + 5, 118))])
+    // Get a random isotope of similar size to player //
+    let element = randItem(table[randint(Math.max(this.game.player.protons - 10, 1), Math.min(this.game.player.protons + 2, 118))])
+    // Catch situation in which an enemy spawns with no protons and recursively reset //
     if (element.protons === 0) { console.log("attempted to spawn atom with 0 protons, retrying"); this.spawn(); return }
+    // Initialise new Atom & AI objects //
     let a = new Atom(this.game, 1, x, y)
     new AI(this.game, a)
+    // Set the atom's nucleons //
     a.setNucleons(parseInt(element.protons), parseInt(element.neutrons))
     console.log(`spawn ${a.element}-${a.isotope} at ${x},${y}`)
   }

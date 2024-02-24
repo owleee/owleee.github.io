@@ -20,6 +20,8 @@ window.addEventListener("resize", (event) => {
   canvas.height = getComputedStyle(canvas).height.replace("px", "");
 });
 
+console.log(ctx)
+
 let cookie = loadCookie();
 
 // Initialise Game manager //
@@ -31,8 +33,13 @@ game.isDev = !window.location.href.includes("github")
 if (game.isDev) game.debug.menu = true
 // Load highscore and settings from cookie // 
 game.highscore = cookie.highscore || 0;
-game.settings = cookie.settings || game.settings;
-game.debug = cookie.debug || game.debug;
+//game.settings = cookie.settings || game.settings;
+for (let setting in cookie.settings) {
+  game.settings[setting] = cookie.settings[setting]
+}
+for (let d in cookie.debug) {
+  game.debug[d] = cookie.debug[d]
+}
 game.lang = cookie.lang || game.lang;
 
 // Detect mouse position //

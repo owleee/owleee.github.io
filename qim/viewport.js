@@ -7,8 +7,6 @@ export default class Viewport {
     this.game = game;
     this.zoom = 1;
     this.trauma = 0;
-    this.xOffset = 0;
-    this.yOffset = 0;
     this.updateDimensions();
     this.shake = {
       x: 0,

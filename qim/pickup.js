@@ -101,7 +101,7 @@ export class PickupSpawner extends GameObject {
 
     let type = "quark";
 
-    if (randint(0, 1) == 1) {
+    if (randint(0, 2) != 1) {
       type = "proton"
       if (randint(1, 10) >= 5) type = "neutron"
     }
