@@ -41,7 +41,6 @@ export default class Pickup extends GameObject {
   }
 
   update(deltaTime) {
-    //if (isOffScreen(this, this.game.viewport)) return;
     super.update(deltaTime);
     this.game.objects.atoms.forEach((atom) => {
       if (
@@ -58,7 +57,7 @@ export default class Pickup extends GameObject {
         } else {
           // 5 points if the isotope is stable
           // 2 points if the isotope has a known decay mode
-          // 1 point otherwawise
+          // 1 point otherwise
           let score =
             1 +
             3 * (this.game.player.decayMode === "IS") +

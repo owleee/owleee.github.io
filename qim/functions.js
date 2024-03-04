@@ -80,6 +80,7 @@ export function text(ctx, x, y, text, style) {
   if (style.fillColour) ctx.fillText(text, x, y, style.maxWidth);
   if (style.lineWidth || style.lineColour)
     ctx.strokeText(text, x, y, style.maxWidth);
+  // return width of text
   return ctx.measureText(text);
 }
 
@@ -226,6 +227,7 @@ export function saveCookie(cookieObj, name = "atom-data") {
 export function loadCookie(name = "atom-data") {
   try {
     console.log(`Loading cookie ${name}`)
+    //console.log(document.cookie.split(";").filter(i => { return i.split("=")[0] === name })[0].split("=")[1])
     return JSON.parse(document.cookie.split(";").filter(i => { return i.split("=")[0] === name })[0].split("=")[1]);
   }
   catch (e) {

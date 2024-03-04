@@ -772,6 +772,10 @@ export const lang = {
     credits: "créditos",
     "movement_true": "movimiento del ratón",
     "movement_false": "movimiento del teclado",
+    "scroll_1": "desplazamiento normal",
+    "scroll_-1": "desplazamiento invertido",
+    "symbols_true": "símbolos mostrados",
+    "symbols_false": "símbolos ocultos"
   },
 }
 

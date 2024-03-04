@@ -1,7 +1,7 @@
 import Viewport from "./viewport.js";
-import { XYrectangle, rectangle, text, round, arraySum, loadCookie, saveCookie } from "./functions.js";
+import { XYrectangle, rectangle, text, round, arraySum, loadCookie, saveCookie, circle } from "./functions.js";
 import { category, categoryColours, L, funFacts, elements, symbols, decayColours } from "./data.js";
-import { randint, randItem, elementSymbol } from "./functions.js";
+import { randint, randItem, elementSymbol, TRvector } from "./functions.js";
 import { default as Pickup, PickupSpawner } from "./pickup.js";
 import { AtomSpawner } from "./atom.js";
 import { FunFactText } from "./button.js";
@@ -262,7 +262,6 @@ export default class Game {
       return n
     }
     this.viewport.zoom = Math.max((this.viewport.zoom -= 0.005 * deltaTime), 1);//this.player.hitboxRadius);
-    console.log(1 / (this.player.hitboxRadius / 20))
 
     // Iterate over all objects and call their update method //
     this.gameObjects.forEach((object) => object.update(deltaTime));
