@@ -59,12 +59,14 @@ export default class Bullet extends GameObject {
     if (this.x + this.hitboxRadius + 1 > this.game.width / 2 || this.x - this.hitboxRadius - 1 < -this.game.width / 2) {
       this.velocity.x *= -1;
       this.team = undefined;
+      this.damage *= 2
     }
 
     // Bounce off north and south (y) walls //
     if (this.y + this.hitboxRadius + 1 > this.game.height / 2 || this.y - this.hitboxRadius - 1 < -this.game.height / 2) {
       this.velocity.y *= -1;
       this.team = undefined;
+      this.damage *= 2
     }
 
     // Check for atom collisions //
@@ -131,7 +133,7 @@ export class Shockwave extends GameObject {
     this.game.objects.atoms.forEach(atom => {
       if (atom.team !== this.team) {
         if (distanceSquared(this.x, this.y, atom.x, atom.y) <= (atom.hitboxRadius + this.hitboxRadius) ** 2 && distanceSquared(this.x, this.y, atom.x, atom.y) >= (-atom.hitboxRadius + this.hitboxRadius) ** 2) {
-          atom.takeDamage(atom.shield === "NUH UH" ? this.damage : 0);
+          atom.takeDamage(atom.shield === "NUH UH" ? this.damage : 0, { x: atom.x, y: atom.y }, true, false);
           if (!atom.iFrames) atom.iFrames = 100
         }
       }

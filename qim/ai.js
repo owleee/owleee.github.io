@@ -21,7 +21,6 @@ export default class AI extends GameObject {
     return;
   }
   update(deltaTime) {
-    this.object.attack.primary = true;
     let distanceToPlayer = distance(
       this.object.x,
       this.object.y,
@@ -34,7 +33,7 @@ export default class AI extends GameObject {
       this.object.hitboxRadius +
       this.game.player.hitboxRadius ||
       distanceToPlayer >
-      this.detectionRadius +
+      (this.detectionRadius * (10 * this.object.awake + 1)) +
       this.object.hitboxRadius +
       this.game.player.hitboxRadius
     ) {
@@ -47,6 +46,14 @@ export default class AI extends GameObject {
         },
         this.object.speed
       );
+    }
+    if (distanceToPlayer <
+      (this.detectionRadius * (10 * this.object.awake + 1)) +
+      this.object.hitboxRadius +
+      this.game.player.hitboxRadius) {
+      this.object.attack.primary = true;
+    } else {
+      this.object.attack.primary = false;
     }
   }
 }

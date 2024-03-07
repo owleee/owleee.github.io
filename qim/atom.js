@@ -62,6 +62,8 @@ export default class Atom extends GameObject {
 
     this.nucleons = [];
 
+    this.awake = false;
+
     this.dead = false;
 
     this.trauma = 0;
@@ -168,11 +170,12 @@ export default class Atom extends GameObject {
     return 2.5 * Math.sqrt(this.isotope) + 2;
   }
 
-  takeDamage(damage = 1, damagePos = {}) {
+  takeDamage(damage = 1, damagePos = {}, drop = true, wake = true) {
+    if (wake) this.awake = true;
     if (this.iFrames && damage < 500) return;
     if (this.team === 1) damage *= this.game.debug.damage;
-    this.game.viewport.trauma += damage * 2
-    this.game.addScore(damage);
+    this.game.viewport.trauma += damage * 5
+    if (this.team == 1) this.game.addScore(damage);
     for (let i = 0; i < randint(5, 10); i++) {
       let p = new Particle(this.game, damagePos.x || this.x, damagePos.y || this.y, this.game.colours.black, 3);
       p.velocity = TRvector(Math.random() * 360, Math.random() * 2)
@@ -181,7 +184,7 @@ export default class Atom extends GameObject {
     for (let i = 0; i < damage; i++) {
       if (this.nucleons.length <= 0) return;
       let damaged = this.nucleons[this.nucleons.length - 1];
-      this.eject(damaged, TRvector(Math.random() * 360, Math.random() * 2));
+      this.eject(damaged, TRvector(Math.random() * 360, Math.random() * 2), 1, drop);
       //let drop = new Pickup(this.game, this.x, this.y, damaged)
       //drop.velocity = { x: this.velocity.x + randint(10, -10) / 10, y: this.velocity.y + randint(10, -10) / 10 }
     }
@@ -189,7 +192,7 @@ export default class Atom extends GameObject {
 
   draw(ctx) {
 
-    if (!this.element) return
+    if (!this.element && this.team == 0) return
 
     // Rudimentary check to see if atom is offscreen //
     // Ensure no unnecessary costly trig & sqrt calculations are used //
@@ -427,12 +430,13 @@ export default class Atom extends GameObject {
     };
   }
 
-  eject(type, direction, amount = 1) {
+  eject(type, direction, amount = 1, drop) {
     if (type == "proton") {
       this.addProton(-amount)
     } else if (type == "neutron") {
       this.addNeutron(-amount)
     }
+    if (!drop) return
     for (let i = 0; i < amount; i++) {
       let p = new Pickup(this.game, this.x, this.y, type);
       p.team = this.team;
@@ -504,8 +508,9 @@ export default class Atom extends GameObject {
         this.setNucleons(1, 0)
         this.game.objects.atoms.forEach(atom => {
           if (!(atom === this || atom === this.game.player))
-            atom.takeDamage(1000);
+            atom.takeDamage(1000, { x: atom.x, y: atom.y }, false);
         })
+        this.iFrames = 7500
         this.game.boomFlash = 7500;
       default:
         break;

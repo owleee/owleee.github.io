@@ -191,7 +191,7 @@ export default class Game {
     if (this.gamestate === "RUNNING" || this.gamestate === "GAMEOVER") {
       // decrement the score wiggle by a small amount //
       this.scoreWiggle = Math.max(0, this.scoreWiggle - 0.005 * deltaTime);
-      this.viewport.trauma = Math.max(0, this.viewport.trauma * (0.97 ** deltaTime));
+      this.viewport.trauma = Math.max(0, this.viewport.trauma * (0.99 ** deltaTime));
       this.boomFlash = Math.max(0, this.boomFlash - deltaTime);
       if (this.viewport.trauma < 0.001) this.viewport.trauma = 0;
       this.funFactCooldown -= deltaTime;
@@ -545,13 +545,15 @@ export default class Game {
       text(ctx, this.viewport.center.x, 540 - this.scroll, "Move around the map, collecting nucleons to grow your atom. Heavier isotopes move slower.", bodyTextStyle)
       text(ctx, this.viewport.center.x, 580 - this.scroll, "Shooting enemies removes nucleons which you can pick up. Destroy the entire nucleus to defeat an enemy.", bodyTextStyle)
       text(ctx, this.viewport.center.x, 620 - this.scroll, "Different isotopes have different decay modes, which can be used as a special attack:", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 660 - this.scroll, "The \"Electron Capture\" special absorbs enemy attacks for a short amount of time, then turns a proton into a neutron.", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 700 - this.scroll, "The \"Beta-plus\" special turns a proton into a neutron and releases a powerful positron and a neutrino.", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 740 - this.scroll, "The \"Beta-minus\" special turns a neutron into a proton and releases an electron and a powerful antineutrino blast.", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 780 - this.scroll, "The \"Alpha Decay\" special releases an explosive alpha particle, dealing large damage to nearby enemies.", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 820 - this.scroll, "The \"Proton Emission\" and \"Neutron Emission\" specials emit protons/neutrons which cannot be picked back up", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 860 - this.scroll, "The \"Spontaneous Fission\" special splits the atom and creates an ally that will distract and attack enemies.", bodyTextStyle)
-      text(ctx, this.viewport.center.x, 900 - this.scroll, "Stable isotopes have no special attack, but take less damage and shoot more accurately", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 700 - this.scroll, "The \"Electron Capture\" special absorbs enemy attacks for a short amount of time, then turns a proton into a neutron.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 740 - this.scroll, "The \"Beta-plus\" special turns a proton into a neutron and releases a powerful positron projectile and a neutrino shockwave.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 780 - this.scroll, "The \"Beta-minus\" special turns a neutron into a proton and releases an electron bullet and a powerful antineutrino shockwave.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 820 - this.scroll, "The \"Alpha Decay\" special releases an explosive alpha particle, dealing large damage to nearby enemies.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 860 - this.scroll, "The \"Proton Emission\" and \"Neutron Emission\" specials emit protons/neutrons which cannot be picked back up.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 900 - this.scroll, "The \"Spontaneous Fission\" special splits the atom, releasing huge amounts of energy that destroy everything on screen.", bodyTextStyle)
+      text(ctx, this.viewport.center.x, 940 - this.scroll, "Stable isotopes have no special attack, but take less damage and shoot more accurately", bodyTextStyle)
+
+      text(ctx, this.viewport.center.x, 1020 - this.scroll, "Use multiple specials in a row to build a decay chain combo that increases damage with each stack.", bodyTextStyle)
 
     } else if (this.gamestate === "CREDITS") {
 
@@ -766,6 +768,14 @@ export default class Game {
         break;
       case "shield":
         this.player.shield = parseInt(c[1])
+        break;
+      case "epilepsy":
+        this.settings.epilepsy = !this.settings.epilepsy;
+        console.log(`epilepsy: ${this.settings.epilepsy}`)
+        break;
+      case "drunk":
+        this.settings.drunk = !this.settings.drunk;
+        console.log(`drunk: ${this.settings.drunk}`)
         break;
       case "":
         this.debug.menu = !this.debug.menu;

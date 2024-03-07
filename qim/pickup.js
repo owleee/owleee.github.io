@@ -67,6 +67,7 @@ export default class Pickup extends GameObject {
         }
       }
     })
+    if (isOffScreen(this, this.game.viewport) && (this.team == 0 || this.team == 1)) { this.deleteMe = true; }
   }
 }
 

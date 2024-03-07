@@ -8,6 +8,7 @@ export default class Viewport {
     this.zoom = 1;
     this.trauma = 0;
     this.updateDimensions();
+    this._shake = {}
     this.shake = {
       x: 0,
       y: 0
@@ -31,7 +32,8 @@ export default class Viewport {
     this.x += this.dx * smooth * Math.min(deltaTime);
     this.y += this.dy * smooth * Math.min(deltaTime);
 
-    this.shake = {
+    this.trauma = Math.min(this.trauma, 50)
+    this._shake = {
       x: Math.random() * this.trauma - this.trauma / 2,
       y: Math.random() * this.trauma - this.trauma / 2
     }
@@ -44,6 +46,19 @@ export default class Viewport {
     this.y = target.y;
   }
 
+  get shake() {
+    if (this.game.settings.drunk) {
+      return {
+        x: Math.random() * this.trauma - this.trauma / 2,
+        y: Math.random() * this.trauma - this.trauma / 2
+      }
+    } else {
+      return this._shake
+    }
+  }
+  set shake(n) {
+    this._shake = n;
+  }
   get centre() {
     return { x: this.width / 2, y: this.height / 2 };
   }
