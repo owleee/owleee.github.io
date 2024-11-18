@@ -1,0 +1,66 @@
+<head>
+    <title>Family Recipe Compendium</title>
+</head>
+
+<body>
+    <h1>Recipe Compendium</h1>
+    <input type="text" id="search" placeholder="Search..." />
+
+    <!--
+    <label for="sort-by">Sort by:</label>
+    <select name="sort-by" id="sort-by">
+        <option value="A-Z">A-Z</option>
+        <option value="Z-A">Z-A</option>
+        <option value="oldest">Oldest First</option>
+        <option value="newest">Newest First</option>
+    </select>-->
+
+    <ul id="recipe-list"></ul>
+</body>
+<script>
+    const isDev = !window.location.href.includes("github")
+    const hrefExtension = isDev ? ".html" : ""
+
+    const recipes = [
+        {
+            displayName: "Emma Morris' Rocky Road",
+            id: "rocky_road",
+            aliases: []
+        },
+        {
+            displayName: "Chili",
+            id: "chili",
+            aliases: ["chilli", "chili con carne", "chile "]
+        },
+        {
+            displayName: "Pizza Dough",
+            id: "pizza_dough",
+            aliases: ["jamie oliver's"]
+        },
+        {
+            displayName: "Ultimate Chocolate Cake",
+            id: "chocolate_cake",
+            aliases: []
+        }
+    ]
+
+    const list = document.getElementById("recipe-list")
+    recipes.forEach(recipe => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.textContent = recipe.displayName
+        a.href = `./${recipe.id}${hrefExtension}`
+        li.id = recipe.id
+        li.appendChild(a)
+        list.appendChild(li)
+    })
+
+    const searchBar = document.getElementById("search")
+    searchBar.addEventListener("input", event => {
+        recipes.forEach(recipe => {
+            document.getElementById(recipe.id).style.display =
+                [recipe.displayName, ...recipe.aliases].filter(alias => alias.toLowerCase().includes(searchBar.value.toLowerCase())).length
+                    ? "" : "none"
+        })
+    })
+</script>
